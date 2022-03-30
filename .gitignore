@@ -1,0 +1,5 @@
+/app-config.json
+/dist/
+
+.idea/
+node_modules/

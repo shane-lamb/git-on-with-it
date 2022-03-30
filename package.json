@@ -1,0 +1,37 @@
+{
+  "name": "git-on-with-it",
+  "version": "1.0.0",
+  "description": "command line workflows for git",
+  "repository": "git@github.com:shane-lamb/git-on-with-it.git",
+  "author": "Shane Lamb <shanelamb1@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/commander": "^2.12.2",
+    "@types/find-parent-dir": "^0.3.0",
+    "@types/inquirer": "^8.2.1",
+    "@types/jest": "^27.4.1",
+    "@types/jest-when": "^3.5.0",
+    "@types/jira-client": "^7.1.4",
+    "@types/node": "^17.0.23",
+    "@types/nodegit": "^0.27.10",
+    "jest": "^27.5.1",
+    "jest-when": "^3.5.1",
+    "ts-jest": "^27.1.4",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
+  },
+  "dependencies": {
+    "@octokit/rest": "^18.12.0",
+    "commander": "^9.1.0",
+    "find-parent-dir": "^0.3.1",
+    "inquirer": "^8.2.2",
+    "jira-client": "^8.1.0",
+    "nodegit": "^0.27.0",
+    "reflect-metadata": "^0.1.13",
+    "tsyringe": "^4.6.0",
+    "typescript-memoize": "^1.1.0"
+  },
+  "scripts": {
+    "test": "jest"
+  }
+}

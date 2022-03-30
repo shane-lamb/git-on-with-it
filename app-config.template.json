@@ -1,0 +1,13 @@
+{
+  "jira": {
+    "userName": "some-username@freetrade.io",
+    "userId": "user-ID-here",
+    "apiToken": "api-token-here",
+    "host": "freetrade.atlassian.net",
+    "statuses": {
+      "readyForDevelopment": "",
+      "inDevelopment": "In Development",
+      "inPrReview": ""
+    }
+  }
+}

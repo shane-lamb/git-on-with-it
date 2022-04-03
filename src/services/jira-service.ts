@@ -16,7 +16,7 @@ export class JiraService {
     private api: JiraApi
 
     constructor(configService: ConfigService, apiFactory: JiraApiFactory) {
-        this.config = configService.getJiraConfig()
+        this.config = configService.jiraConfig()
         this.api = apiFactory.create({
             protocol: 'https',
             host: this.config.host,

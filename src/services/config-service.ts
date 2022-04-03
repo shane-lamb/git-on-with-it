@@ -1,10 +1,12 @@
 import { injectable, singleton } from 'tsyringe'
 import { FileService } from './file-service'
+import { Memoize } from 'typescript-memoize'
 
 export interface AppConfig {
     jira: JiraConfig
     github: GithubConfig
     git: GitConfig
+    logOutputEnabled: boolean
 }
 
 export interface JiraConfig {
@@ -23,6 +25,7 @@ export interface GithubConfig {
 }
 
 export interface GitConfig {
+    possibleBaseBranches: string[]
 }
 
 @singleton()
@@ -33,6 +36,7 @@ export class ConfigService {
     constructor(private fileService: FileService) {
     }
 
+    @Memoize()
     private readConfig(): AppConfig {
         if (this.config) return this.config
         // todo: account for missing file
@@ -40,7 +44,15 @@ export class ConfigService {
         return this.config = JSON.parse(json)
     }
 
-    getJiraConfig(): JiraConfig {
+    jiraConfig(): JiraConfig {
         return this.readConfig().jira
+    }
+
+    gitConfig(): GitConfig {
+        return this.gitConfig()
+    }
+
+    logOutputEnabled(): boolean {
+        return this.readConfig().logOutputEnabled
     }
 }

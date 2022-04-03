@@ -4,8 +4,6 @@ import { container } from 'tsyringe'
 
 import { PromptService } from './services/prompt-service'
 import { OpenPr } from './commands/open-pr'
-import { TextEditorService } from './services/text-editor-service'
-import { GitService } from './services/git-service'
 
 const program = new Command()
 
@@ -18,10 +16,7 @@ program.command('open-pr')
     .description('WIP command for opening a PR in GitHub')
     .action(async () => {
         const service = container.resolve(OpenPr)
-        const result = await service.execute()
-        const textEditor = container.resolve(TextEditorService)
-        const updated = await textEditor.editText(result as string)
-        console.log(updated)
+        await service.execute()
     })
 
 program.command('test-prompt-service')
@@ -33,13 +28,6 @@ program.command('test-prompt-service')
             {id: 'b', description: 'option B'},
         ], "Make a selection")
         console.log(JSON.stringify(config))
-    })
-
-program.command('test-git-service')
-    .description('Temporary command to test GitService')
-    .action(async () => {
-        const service = container.resolve(GitService)
-        const result = await service.getCurrentBranchName()
     })
 
 program.parse()

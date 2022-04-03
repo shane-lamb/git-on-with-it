@@ -9,5 +9,9 @@
       "inDevelopment": "In Development",
       "inPrReview": ""
     }
-  }
+  },
+  "git": {
+    "possibleBaseBranches": ["main", "develop"]
+  },
+  "logOutputEnabled": false
 }

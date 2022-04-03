@@ -9,7 +9,7 @@ describe('JIRA Service', () => {
 
     beforeEach(() => {
         const configService = createMock(ConfigService)
-        configService.getJiraConfig.mockReturnValueOnce({
+        configService.jiraConfig.mockReturnValueOnce({
             userId: 'my-user-id',
             host: 'my-host',
             apiToken: 'my-api-token',

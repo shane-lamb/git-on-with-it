@@ -4,11 +4,22 @@ import { JiraService } from '../services/jira-service'
 import { FileService } from '../services/file-service'
 import { when } from 'jest-when'
 import { PromptService } from '../services/prompt-service'
+import { GitService } from '../services/git-service'
+import { GithubService } from '../services/github-service'
 
 const jiraService = createMock(JiraService)
+const gitService = createMock(GitService)
 const fileService = createMock(FileService)
 const promptService = createMock(PromptService)
-const service = new OpenPr(jiraService, fileService, promptService)
+const githubService = createMock(GithubService)
+
+const service = new OpenPr(
+    jiraService,
+    gitService,
+    fileService,
+    promptService,
+    githubService,
+)
 
 describe('Opening a PR', () => {
     beforeEach(() => {
@@ -17,6 +28,16 @@ describe('Opening a PR', () => {
 
         // todo: parse issue ID from branch name
         // for now, assume branch name does not contain issue ID
+
+        gitService.getCurrentBranch.mockResolvedValue('current-branch')
+
+        when(gitService.getBaseBranch)
+            .calledWith('current-branch')
+            .mockResolvedValue('main-branch')
+
+        when(gitService.isChildBranchUpToDate)
+            .calledWith('main-branch', 'current-branch')
+            .mockResolvedValue(true)
 
         jiraService.getIssuesInDevelopment.mockResolvedValue([{
             key: 'ISSUEKEY1',
@@ -31,15 +52,28 @@ describe('Opening a PR', () => {
         fileService.getGitRepoRootDirectory.mockReturnValue('/my-repo')
 
         when(fileService.readFile)
-            .calledWith('/my-repo/.github/PULL_REQUEST_TEMPLATE.md')
-            .mockReturnValue('PULL\nREQUEST\nTEMPLATE')
+            .calledWith('/my-repo', '.github', 'PULL_REQUEST_TEMPLATE.md')
+            .mockReturnValue('PULL REQUEST TEMPLATE')
+
+        promptService.editText.mockImplementation(text => Promise.resolve(
+            text.split('\n').map(line => line + ' - edited').join('\n'),
+        ))
     })
 
     describe('given happy path', () => {
-        it('should successfully generate PR template', async () => {
-            const result = await service.execute()
-
-            expect(result).toEqual("[ISSUEKEY1] summary 1\nPULL\nREQUEST\nTEMPLATE")
+        beforeEach(async () => {
+            await service.execute()
+        })
+        it('should push current branch to remote', async () => {
+            expect(gitService.pushToRemote).toBeCalledWith('current-branch')
+        })
+        it('should create a PR', async () => {
+            expect(githubService.createPr).toBeCalledWith({
+                baseBranch: 'main-branch',
+                childBranch: 'current-branch',
+                title: '[ISSUEKEY1] summary 1 - edited',
+                body: 'PULL REQUEST TEMPLATE - edited',
+            })
         })
     })
 
@@ -47,9 +81,9 @@ describe('Opening a PR', () => {
         it('should cancel the operation', async () => {
             when(fileService.getGitRepoRootDirectory).mockReturnValue(null)
 
-            const result = await service.execute()
+            await service.execute()
 
-            expect(result).toEqual(null)
+            expect(githubService.createPr).toBeCalledTimes(0)
         })
     })
 
@@ -57,19 +91,35 @@ describe('Opening a PR', () => {
         it('should successfully generate PR template', async () => {
             fileService.readFile.mockReturnValue(null)
 
-            const result = await service.execute()
+            await service.execute()
 
-            expect(result).toEqual("[ISSUEKEY1] summary 1\nPR body goes here")
+            expect(githubService.createPr).toBeCalledWith(expect.objectContaining({
+                body: 'PR body goes here - edited',
+            }))
+        })
+    })
+
+    describe('given pull request template contains multiple lines', () => {
+        it('should include all lines in body', async () => {
+            fileService.readFile.mockReturnValue('template line 1\ntemplate line 2')
+
+            await service.execute()
+
+            expect(githubService.createPr).toBeCalledWith(expect.objectContaining({
+                body: 'template line 1 - edited\ntemplate line 2 - edited',
+            }))
         })
     })
 
     describe('given no issues "in development"', () => {
-        it('should leave the PR title blank', async () => {
+        it('should use a placeholder for the PR title', async () => {
             jiraService.getIssuesInDevelopment.mockResolvedValue([])
 
-            const result = await service.execute()
+            await service.execute()
 
-            expect(result).toEqual("PR title on this line\nPULL\nREQUEST\nTEMPLATE")
+            expect(githubService.createPr).toBeCalledWith(expect.objectContaining({
+                title: 'PR title on this line - edited',
+            }))
         })
     })
 })

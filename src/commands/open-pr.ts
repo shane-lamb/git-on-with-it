@@ -1,28 +1,45 @@
-import path from 'path'
 import { injectable, singleton } from 'tsyringe'
 import { JiraIssue, JiraService } from '../services/jira-service'
 import { FileService } from '../services/file-service'
 import { PromptService } from '../services/prompt-service'
+import { GitService } from '../services/git-service'
+import { GithubService } from '../services/github-service'
 
 @singleton()
 @injectable()
 export class OpenPr {
     constructor(
         private jiraService: JiraService,
+        private gitService: GitService,
         private fileService: FileService,
         private promptService: PromptService,
+        private githubService: GithubService,
     ) {
     }
 
-    async execute(): Promise<string | null> {
+    async execute(): Promise<void> {
         const gitDir = this.fileService.getGitRepoRootDirectory()
-        if (!gitDir) return null
+        if (!gitDir) return
 
         const title = await this.getTitle()
-
         const body = await this.getBody(gitDir)
 
-        return `${title}\n${body}`
+        const editedText = await this.promptService.editText(`${title}\n${body}`)
+        const split = editedText.split('\n')
+        const first = split[0]
+        const [, ...rest] = split
+
+        const selectedBranch = await this.gitService.getCurrentBranch()
+        const baseBranch = await this.gitService.getBaseBranch(selectedBranch)
+
+        await this.gitService.pushToRemote(selectedBranch)
+
+        await this.githubService.createPr({
+            baseBranch,
+            childBranch: selectedBranch,
+            title: first,
+            body: rest.join('\n')
+        })
     }
 
     private async getTitle() {
@@ -41,7 +58,7 @@ export class OpenPr {
     }
 
     private async getBody(gitDirectory: string) {
-        const templateFile = this.fileService.readFile(path.join(gitDirectory, '.github', 'PULL_REQUEST_TEMPLATE.md'))
+        const templateFile = this.fileService.readFile(gitDirectory, '.github', 'PULL_REQUEST_TEMPLATE.md')
         return templateFile || 'PR body goes here'
     }
 }

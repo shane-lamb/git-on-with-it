@@ -31,9 +31,9 @@ export class JiraService {
             {fields: ['summary', 'lastViewed']},
         )
         return result.issues.map(issue => ({
-            summary: issue.summary,
+            summary: issue.fields.summary,
             key: issue.key,
-            lastViewed: issue.lastViewed,
+            lastViewed: issue.fields.lastViewed,
         }))
     }
 }

@@ -4,6 +4,7 @@ import { container } from 'tsyringe'
 
 import { PromptService } from './services/prompt-service'
 import { OpenPr } from './commands/open-pr'
+import { JiraService } from './services/jira-service'
 
 const program = new Command()
 
@@ -28,6 +29,13 @@ program.command('test-prompt-service')
             {id: 'b', description: 'option B'},
         ], "Make a selection")
         console.log(JSON.stringify(config))
+    })
+
+program.command('test-jira-service')
+    .description('Temporary command to test JiraService')
+    .action(async () => {
+        const service = container.resolve(JiraService)
+        await service.getIssuesInDevelopment()
     })
 
 program.parse()

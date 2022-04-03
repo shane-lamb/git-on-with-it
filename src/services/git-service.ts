@@ -1,10 +1,12 @@
 import { injectable, singleton } from 'tsyringe'
 import { Commit, Merge, Reference, Repository } from 'nodegit'
 import { Memoize } from 'typescript-memoize'
-import { FileService } from './file-service'
-import { executeCommand } from '../util/child-process-util'
-import { ConfigService, GitConfig } from './config-service'
 import { maxBy } from 'lodash'
+
+import { executeCommand } from '../util/child-process-util'
+import { asyncMap, removeNulls } from '../util/functional'
+import { FileService } from './file-service'
+import { ConfigService, GitConfig } from './config-service'
 import { LogService } from './log-service'
 
 @singleton()
@@ -30,20 +32,19 @@ export class GitService {
         const childBranch = await this.getBranch(branchName)
         if (!childBranch) throw Error('Branch does not exist: ' + branchName)
 
-        const baseBranchesPromises = this.config.possibleBaseBranches
-            .map(async name => await this.getBranch(name))
-            .filter(maybeBranch => !!maybeBranch)
-            .map(async b => {
-                const branch = b as unknown as Reference // we've filtered out nulls
-                const baseCommit = await this.getBaseCommit(branch, childBranch)
-                return {
-                    name: branch.shorthand(),
-                    parentCount: baseCommit.parentcount(),
-                }
-            })
-        const baseBranches = await Promise.all(baseBranchesPromises)
+        const possibleBaseBranches = this.config.possibleBaseBranches
+        this.log.write('Checking possible base branches to find nearest one', {possibleBaseBranches})
+        const branches = await asyncMap(possibleBaseBranches, name => this.getBranch(name))
+        const baseBranches = removeNulls(branches)
+        const withCount = await asyncMap(baseBranches, async branch => {
+            const baseCommit = await this.getBaseCommit(branch, childBranch)
+            return {
+                name: branch.shorthand(),
+                parentCount: baseCommit.parentcount(),
+            }
+        })
 
-        const selected = maxBy(baseBranches, b => b.parentCount)
+        const selected = maxBy(withCount, b => b.parentCount)
         if (!selected) throw Error('No base branch found!')
 
         return selected.name
@@ -62,11 +63,11 @@ export class GitService {
     }
 
     async pushToRemote(branchName: string): Promise<void> {
-        return executeCommand(`git push --set-upstream origin ${branchName}`)
+        await executeCommand(`git push --set-upstream origin ${branchName}`)
     }
 
     private async fetchBranch(branchName: string) {
-        return executeCommand(`git fetch origin ${branchName}:${branchName}`)
+        await executeCommand(`git fetch origin ${branchName}:${branchName}`)
     }
 
     @Memoize()

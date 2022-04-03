@@ -49,7 +49,7 @@ export class ConfigService {
     }
 
     gitConfig(): GitConfig {
-        return this.gitConfig()
+        return this.readConfig().git
     }
 
     logOutputEnabled(): boolean {

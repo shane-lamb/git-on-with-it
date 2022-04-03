@@ -10,9 +10,12 @@ export class LogService {
         this.enabled = configService.logOutputEnabled()
     }
 
-    write(text: string) {
+    write(text: string, props?: object) {
         if (this.enabled) {
-            console.log(text)
+            console.log(JSON.stringify(text))
+            if (props) {
+                console.log(JSON.stringify(props, null, 2))
+            }
         }
     }
 }

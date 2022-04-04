@@ -13,6 +13,7 @@ export class GithubService {
             ...options,
             body: '...'
         })
+        // reference: https://cli.github.com/manual/gh_pr_create
         await spawnCommand('gh', [
             'pr',
             'create',

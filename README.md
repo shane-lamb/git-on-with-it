@@ -26,6 +26,17 @@ Brainstormed possible features:
 
 Initial focus will be on the PR opening functionality.
 
+## Dependencies
+You must have the following installed and configured on your system:
+- [GitHub CLI](https://github.com/cli/cli)
+  - Used for PR creation
+- [Git](https://www.atlassian.com/git/tutorials/install-git)
+  - Used to execute various CLI commands, like pushing a local branch to remote
+  - It's most likely already installed on your system
+- NodeJS
+  - Required to compile and execute the source code
+  - Using [nvm](https://github.com/nvm-sh/nvm) is a good way to install and switch between different Node versions on MacOS
+
 ## Configuration
 The app/commands will look for a config file in the root named `app-config.json`. This will hold your credentials for the various integrations, amongst other things.
 
@@ -40,6 +51,16 @@ Description of the config fields:
 | `jira.apiToken` | Create one here: https://id.atlassian.com/manage-profile/security/api-tokens
 | `jira.host` | Hostname of the JIRA instance, eg `companyname.atlassian.net`
 | `jira.statuses.*` | The human-readable status IDs that will be used to classify issues
+| `git.possibleBaseBranches` | A list of the possible names of "long-lived" branches, such as `main`, that are routinely branched from and merged into. Used to determine base branch for PR creation, for example.
+| `logOutputEnabled` | If set to `true`, debug logging will be outputted to the console during command execution
+
+## Build & Run
+```bash
+yarn install # install node dependencies
+tsc # transpile .ts files into .js files and place in /dist directory
+node ./dist --help # list available commands
+node ./dist [command] # run command
+```
 
 ## Design decisions
 `tsyringe` has been used as a lightweight dependency injection solution,
@@ -56,17 +77,6 @@ when you change it in the other.
 during development, and easy to see that a file has tests created for it.
 
 ## Rough notes
-https://stackoverflow.com/questions/45548154/how-to-get-current-branch-name-with-nodegit
-```
-import * as Git from 'nodegit';
-let repo: Git.Repository = await Git.Repository.open("path to the repo");
-let currentBranch: Git.Reference = await repo.getCurrentBranch();
-let currentBranchName: string = currentBranch.shorthand();
-```
-
-https://cli.github.com/manual/gh_pr_create
-https://id.atlassian.com/manage-profile/security/api-tokens
-https://developer.atlassian.com/cloud/jira/software/about-the-javascript-api/
 https://stackoverflow.com/questions/11269256/how-to-name-and-retrieve-a-stash-by-name-in-git
 ```bash
 function gitstash() {

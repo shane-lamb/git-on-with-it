@@ -7,7 +7,7 @@ import { GithubService } from '../services/github-service'
 
 @singleton()
 @injectable()
-export class OpenPr {
+export class OpenPrCommand {
     constructor(
         private jiraService: JiraService,
         private gitService: GitService,

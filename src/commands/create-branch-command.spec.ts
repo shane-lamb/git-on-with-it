@@ -1,6 +1,6 @@
 import { when } from 'jest-when'
 
-import { CreateBranch } from './create-branch'
+import { CreateBranchCommand } from './create-branch-command'
 import { createMock } from '../test-util/create-mock'
 import { GitService } from '../services/git-service'
 import { ConfigService } from '../services/config-service'
@@ -15,7 +15,7 @@ configService.gitConfig.mockReturnValue({
 const jiraService = createMock(JiraService)
 const promptService = createMock(PromptService)
 
-const service = new CreateBranch(gitService, configService, jiraService, promptService)
+const command = new CreateBranchCommand(gitService, configService, jiraService, promptService)
 
 describe('Creating a branch', () => {
     beforeEach(() => {
@@ -37,7 +37,7 @@ describe('Creating a branch', () => {
 
     describe('given happy path', () => {
         beforeEach(async () => {
-            await service.execute()
+            await command.execute()
         })
         it('should make sure current branch is up to date before forking', async () => {
             expect(gitService.fetchBranch).toBeCalledWith('dev')
@@ -51,7 +51,7 @@ describe('Creating a branch', () => {
         it('should cancel branch creation', async () => {
             gitService.getCurrentBranch.mockResolvedValue('develop')
 
-            await service.execute()
+            await command.execute()
 
             expect(gitService.createAndCheckoutBranch).toBeCalledTimes(0)
         })

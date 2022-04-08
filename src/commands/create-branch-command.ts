@@ -4,10 +4,9 @@ import { ConfigService, GitConfig } from '../services/config-service'
 import { JiraIssue, JiraService } from '../services/jira-service'
 import { PromptService } from '../services/prompt-service'
 
-
 @injectable()
 @singleton()
-export class CreateBranch {
+export class CreateBranchCommand {
     gitConfig: GitConfig
 
     constructor(

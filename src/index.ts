@@ -3,9 +3,9 @@ import { Command } from 'commander'
 import { container } from 'tsyringe'
 
 import { PromptService } from './services/prompt-service'
-import { OpenPr } from './commands/open-pr'
+import { OpenPrCommand } from './commands/open-pr-command'
 import { JiraService } from './services/jira-service'
-import { CreateBranch } from './commands/create-branch'
+import { CreateBranchCommand } from './commands/create-branch-command'
 
 const program = new Command()
 
@@ -16,17 +16,11 @@ program
 
 program.command('open-pr')
     .description('WIP command for opening a PR in GitHub')
-    .action(async () => {
-        const service = container.resolve(OpenPr)
-        await service.execute()
-    })
+    .action(() => container.resolve(OpenPrCommand).execute())
 
 program.command('create-branch')
     .description('WIP command for creating a feature branch based on JIRA ticket')
-    .action(async () => {
-        const service = container.resolve(CreateBranch)
-        await service.execute()
-    })
+    .action(() => container.resolve(CreateBranchCommand).execute())
 
 program.command('test-prompt-service')
     .description('Temporary command to test PromptService')

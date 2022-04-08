@@ -62,12 +62,16 @@ export class GitService {
         return baseCommit.parentcount() === latestParentCommit.parentcount()
     }
 
+    async createAndCheckoutBranch(branchName: string): Promise<void> {
+        await executeCommand(`git checkout -b ${branchName}`)
+    }
+
     async pushToRemote(branchName: string): Promise<void> {
         await executeCommand(`git push --set-upstream origin ${branchName}`)
     }
 
-    private async fetchBranch(branchName: string) {
-        await executeCommand(`git fetch origin ${branchName}:${branchName}`)
+    async fetchBranch(branchName: string) {
+        await executeCommand(`git fetch --update-head-ok origin ${branchName}:${branchName}`)
     }
 
     @Memoize()

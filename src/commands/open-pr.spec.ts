@@ -77,6 +77,27 @@ describe('Opening a PR', () => {
         })
     })
 
+    describe('given current branch contains JIRA issue ID in the name', () => {
+        it('should auto-select that JIRA issue', async () => {
+            gitService.getCurrentBranch.mockResolvedValue('branch-ISSUEKEY1-name')
+
+            when(gitService.getBaseBranch)
+                .calledWith('branch-ISSUEKEY1-name')
+                .mockResolvedValue('main-branch')
+
+            when(gitService.isChildBranchUpToDate)
+                .calledWith('main-branch', 'branch-ISSUEKEY1-name')
+                .mockResolvedValue(true)
+
+            await service.execute()
+
+            expect(promptService.selectOption).toBeCalledTimes(0)
+            expect(githubService.createPr).toBeCalledWith(expect.objectContaining({
+                title: '[ISSUEKEY1] summary 1 - edited',
+            }))
+        })
+    })
+
     describe('given git repository not found', () => {
         it('should cancel the operation', async () => {
             when(fileService.getGitRepoRootDirectory).mockReturnValue(null)

@@ -1,6 +1,6 @@
 import { OpenPrCommand } from './open-pr-command'
 import { createMock } from '../test-util/create-mock'
-import { JiraService } from '../services/jira-service'
+import { JiraIssue, JiraService } from '../services/jira-service'
 import { FileService } from '../services/file-service'
 import { when } from 'jest-when'
 import { PromptService } from '../services/prompt-service'
@@ -39,11 +39,11 @@ describe('Opening a PR', () => {
             .calledWith('main-branch', 'current-branch')
             .mockResolvedValue(true)
 
-        jiraService.getIssuesInDevelopment.mockResolvedValue([{
+        const issue: Partial<JiraIssue> = {
             key: 'ISSUEKEY1',
             summary: 'summary 1',
-            lastViewed: '',
-        }])
+        }
+        jiraService.getIssuesInDevelopment.mockResolvedValue([issue as JiraIssue])
 
         when(promptService.selectOption)
             .calledWith([{id: 'ISSUEKEY1', description: 'summary 1'}], expect.anything())

@@ -4,7 +4,7 @@ import { CreateBranchCommand } from './create-branch-command'
 import { createMock } from '../test-util/create-mock'
 import { GitService } from '../services/git-service'
 import { ConfigService } from '../services/config-service'
-import { JiraService } from '../services/jira-service'
+import { JiraIssue, JiraService } from '../services/jira-service'
 import { PromptService } from '../services/prompt-service'
 
 const gitService = createMock(GitService)
@@ -24,11 +24,11 @@ describe('Creating a branch', () => {
 
         gitService.getCurrentBranch.mockResolvedValue('dev')
 
-        jiraService.getIssuesInDevelopment.mockResolvedValue([{
+        const issue: Partial<JiraIssue> = {
             key: 'ISSUEKEY1',
-            summary: 'a summary 1',
-            lastViewed: '',
-        }])
+            summary: 'summary 1',
+        }
+        jiraService.getIssuesInDevelopment.mockResolvedValue([issue as JiraIssue])
 
         when(promptService.selectOption)
             .calledWith([{id: 'ISSUEKEY1', description: 'a summary 1'}], expect.anything())

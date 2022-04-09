@@ -28,12 +28,13 @@ export class JiraService {
     async getIssuesInDevelopment(): Promise<JiraIssue[]> {
         const result = await this.api.searchJira(
             `status in ("${this.config.statuses.inDevelopment}") AND assignee in (${this.config.userId})`,
-            {fields: ['summary', 'lastViewed']},
+            {fields: ['summary', 'description']},
         )
+        console.log(JSON.stringify(result.issues, null, 2))
         return result.issues.map(issue => ({
             summary: issue.fields.summary,
             key: issue.key,
-            lastViewed: issue.fields.lastViewed,
+            description: issue.fields.description,
         }))
     }
 }
@@ -41,5 +42,5 @@ export class JiraService {
 export interface JiraIssue {
     summary: string
     key: string
-    lastViewed: string
+    description: string
 }

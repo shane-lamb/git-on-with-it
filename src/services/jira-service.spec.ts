@@ -42,7 +42,7 @@ describe('JIRA Service', () => {
                     key: 'CODE-4444',
                     fields: {
                         summary: 'Create an endpoint',
-                        lastViewed: '2022-03-31T04:35:16.910+0100',
+                        description: 'Some link [here|https://google.com], and some points below:\n\n* Point 1\n* Point 2\n',
                     },
                 },
             ],
@@ -50,7 +50,7 @@ describe('JIRA Service', () => {
         when(jiraApi.searchJira)
             .calledWith(
                 `status in ("in-development-status") AND assignee in (my-user-id)`,
-                {fields: ['summary', 'lastViewed']},
+                expect.anything(),
             )
             .mockResolvedValue(response as never)
 
@@ -59,7 +59,7 @@ describe('JIRA Service', () => {
         expect(result).toEqual([{
             key: 'CODE-4444',
             summary: 'Create an endpoint',
-            lastViewed: '2022-03-31T04:35:16.910+0100',
+            description: 'Some link [here|https://google.com], and some points below:\n\n* Point 1\n* Point 2\n',
         }])
     })
 })

@@ -52,6 +52,10 @@ Description of the config fields:
 | `jira.host` | Hostname of the JIRA instance, eg `companyname.atlassian.net`
 | `jira.statuses.*` | The human-readable status IDs that will be used to classify issues
 | `git.possibleBaseBranches` | A list of the possible names of "long-lived" branches, such as `main`, that are routinely branched from and merged into. Used to determine base branch for PR creation, for example.
+| `pullRequestTemplate.replacements` | Automatically substitute text within the PR template
+| `...replacements[].target` | Text to find, that will be replaced/substituted
+| `...replacements[].useRegex` | If `true`, then `target` is to be interpreted as a regular expression, rather than literal text. Defaults to `false`
+| `...replacements[].replaceWith` | The replacement text
 | `logOutputEnabled` | If set to `true`, debug logging will be outputted to the console during command execution
 
 ## Build & Run

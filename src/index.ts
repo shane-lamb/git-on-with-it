@@ -6,6 +6,7 @@ import { PromptService } from './services/prompt-service'
 import { OpenPrCommand } from './commands/open-pr-command'
 import { JiraService } from './services/jira-service'
 import { CreateBranchCommand } from './commands/create-branch-command'
+import { PostPrCommand } from './commands/post-pr-command'
 
 const program = new Command()
 
@@ -17,6 +18,10 @@ program
 program.command('open-pr')
     .description('WIP command for opening a PR in GitHub')
     .action(() => container.resolve(OpenPrCommand).execute())
+
+program.command('post-pr')
+    .description('WIP command for copying text for a PR post')
+    .action(() => container.resolve(PostPrCommand).execute())
 
 program.command('create-branch')
     .description('WIP command for creating a feature branch based on JIRA ticket')

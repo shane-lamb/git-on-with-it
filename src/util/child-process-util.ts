@@ -1,16 +1,17 @@
 import { exec, spawn } from 'child_process'
 
-export async function executeCommand(command: string): Promise<void> {
+export interface CommandResult {
+    standardOut: string
+    errorOut: string
+}
+
+export async function executeCommand(command: string): Promise<CommandResult> {
     return new Promise(resolve => {
         exec(command, (error, stdout, stderr) => {
-            if (error) {
-                console.log(`error: ${error.message}`)
-            }
-            if (stderr) {
-                console.log(`stderr: ${stderr}`)
-            }
-            console.log(`stdout: ${stdout}`)
-            resolve()
+            resolve({
+                standardOut: stdout,
+                errorOut: stderr
+            })
         })
     })
 }

@@ -26,7 +26,7 @@ describe('Creating a branch', () => {
 
         const issue: Partial<JiraIssue> = {
             key: 'ISSUEKEY1',
-            summary: 'summary 1',
+            summary: 'a summary 1',
         }
         jiraService.getIssuesInDevelopment.mockResolvedValue([issue as JiraIssue])
 

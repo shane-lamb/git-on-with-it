@@ -1,12 +1,18 @@
 import { injectable, singleton } from 'tsyringe'
 import { FileService } from './file-service'
 import { Memoize } from 'typescript-memoize'
+import { Transform } from './transform-service'
 
 export interface AppConfig {
     jira: JiraConfig
     github: GithubConfig
     git: GitConfig
+    pullRequestTemplate: PrTemplateConfig
     logOutputEnabled: boolean
+}
+
+export interface PrTemplateConfig {
+    replacements: Transform[]
 }
 
 export interface JiraConfig {
@@ -50,6 +56,10 @@ export class ConfigService {
 
     gitConfig(): GitConfig {
         return this.readConfig().git
+    }
+
+    prTemplateConfig(): PrTemplateConfig {
+        return this.readConfig().pullRequestTemplate
     }
 
     logOutputEnabled(): boolean {

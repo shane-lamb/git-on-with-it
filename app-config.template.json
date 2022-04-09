@@ -11,7 +11,27 @@
     }
   },
   "git": {
-    "possibleBaseBranches": ["main", "develop"]
+    "possibleBaseBranches": [
+      "main",
+      "develop"
+    ]
+  },
+  "pullRequestTemplate": {
+    "replacements": [
+      {
+        "target": "[ ] Title has JIRA ticket",
+        "replaceWith": "[x] Title has JIRA ticket"
+      },
+      {
+        "target": "## Description (what changed)",
+        "replaceWith": "## Description ([JIRA ticket here](https://freetrade.atlassian.net/browse/${issue.key}))"
+      },
+      {
+        "target": "_This PR covers.*",
+        "useRegex": true,
+        "replaceWith": "${issue.description}"
+      }
+    ]
   },
   "logOutputEnabled": false
 }

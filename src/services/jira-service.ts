@@ -30,7 +30,6 @@ export class JiraService {
             `status in ("${this.config.statuses.inDevelopment}") AND assignee in (${this.config.userId})`,
             {fields: ['summary', 'description']},
         )
-        console.log(JSON.stringify(result.issues, null, 2))
         return result.issues.map(issue => ({
             summary: issue.fields.summary,
             key: issue.key,

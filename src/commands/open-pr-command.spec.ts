@@ -1,17 +1,21 @@
 import { OpenPrCommand } from './open-pr-command'
 import { createMock } from '../test-util/create-mock'
-import { JiraIssue, JiraService } from '../services/jira-service'
+import { JiraService } from '../services/jira-service'
 import { FileService } from '../services/file-service'
 import { when } from 'jest-when'
 import { PromptService } from '../services/prompt-service'
 import { GitService } from '../services/git-service'
 import { GithubService } from '../services/github-service'
+import { Transform, TransformService } from '../services/transform-service'
+import { ConfigService } from '../services/config-service'
 
 const jiraService = createMock(JiraService)
 const gitService = createMock(GitService)
 const fileService = createMock(FileService)
 const promptService = createMock(PromptService)
 const githubService = createMock(GithubService)
+const transformService = createMock(TransformService)
+const configService = createMock(ConfigService)
 
 const command = new OpenPrCommand(
     jiraService,
@@ -19,6 +23,8 @@ const command = new OpenPrCommand(
     fileService,
     promptService,
     githubService,
+    transformService,
+    configService,
 )
 
 describe('Opening a PR', () => {
@@ -26,8 +32,12 @@ describe('Opening a PR', () => {
         // Set up happy path as default,
         // behaviour can be overridden in individual tests.
 
-        // todo: parse issue ID from branch name
-        // for now, assume branch name does not contain issue ID
+        configService.prTemplateConfig.mockReturnValue({
+            replacements: [{
+                target: '[ ]',
+                replaceWith: '[x]',
+            }],
+        })
 
         gitService.getCurrentBranch.mockResolvedValue('current-branch')
 
@@ -39,11 +49,11 @@ describe('Opening a PR', () => {
             .calledWith('main-branch', 'current-branch')
             .mockResolvedValue(true)
 
-        const issue: Partial<JiraIssue> = {
+        jiraService.getIssuesInDevelopment.mockResolvedValue([{
             key: 'ISSUEKEY1',
             summary: 'summary 1',
-        }
-        jiraService.getIssuesInDevelopment.mockResolvedValue([issue as JiraIssue])
+            description: 'desc 1',
+        }])
 
         when(promptService.selectOption)
             .calledWith([{id: 'ISSUEKEY1', description: 'summary 1'}], expect.anything())
@@ -58,6 +68,10 @@ describe('Opening a PR', () => {
         promptService.editText.mockImplementation(text => Promise.resolve(
             text.split('\n').map(line => line + ' - edited').join('\n'),
         ))
+
+        transformService.doReplacements.mockImplementation(text => text + ' - with replace')
+
+        transformService.substituteVariables.mockImplementation(text => text + ' - with vars')
     })
 
     describe('given happy path', () => {
@@ -72,8 +86,22 @@ describe('Opening a PR', () => {
                 baseBranch: 'main-branch',
                 childBranch: 'current-branch',
                 title: '[ISSUEKEY1] summary 1 - edited',
-                body: 'PULL REQUEST TEMPLATE - edited',
+                body: 'PULL REQUEST TEMPLATE - with replace - with vars - edited',
             })
+        })
+        it('should have correct variables available for substitution', async () => {
+            expect(transformService.substituteVariables).toBeCalledWith(expect.anything(), {
+                'issue.key': 'ISSUEKEY1',
+                'issue.summary': 'summary 1',
+                'issue.description': 'desc 1',
+            })
+        })
+        it('should use replacement config', async () => {
+            const transforms: Transform[] = [{
+                target: '[ ]',
+                replaceWith: '[x]',
+            }]
+            expect(transformService.doReplacements).toBeCalledWith(expect.anything(), transforms)
         })
     })
 
@@ -115,7 +143,7 @@ describe('Opening a PR', () => {
             await command.execute()
 
             expect(githubService.createPr).toBeCalledWith(expect.objectContaining({
-                body: 'PR body goes here - edited',
+                body: 'PR body goes here - with replace - with vars - edited',
             }))
         })
     })
@@ -127,7 +155,7 @@ describe('Opening a PR', () => {
             await command.execute()
 
             expect(githubService.createPr).toBeCalledWith(expect.objectContaining({
-                body: 'template line 1 - edited\ntemplate line 2 - edited',
+                body: 'template line 1 - edited\ntemplate line 2 - with replace - with vars - edited',
             }))
         })
     })

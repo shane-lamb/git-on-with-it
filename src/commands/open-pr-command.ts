@@ -1,9 +1,12 @@
+import { mapKeys } from 'lodash'
 import { injectable, singleton } from 'tsyringe'
 import { JiraIssue, JiraService } from '../services/jira-service'
 import { FileService } from '../services/file-service'
 import { PromptService } from '../services/prompt-service'
 import { GitService } from '../services/git-service'
 import { GithubService } from '../services/github-service'
+import { TransformService } from '../services/transform-service'
+import { ConfigService } from '../services/config-service'
 
 @singleton()
 @injectable()
@@ -14,6 +17,8 @@ export class OpenPrCommand {
         private fileService: FileService,
         private promptService: PromptService,
         private githubService: GithubService,
+        private transformService: TransformService,
+        private configService: ConfigService,
     ) {
     }
 
@@ -29,7 +34,7 @@ export class OpenPrCommand {
         const titleTemplate = issue ?
             `[${issue.key}] ${issue.summary}` :
             'PR title on this line'
-        const bodyTemplate = await this.getBodyTemplate(gitDir)
+        const bodyTemplate = await this.getBodyTemplate(gitDir, issue)
         const [title, body] = await this.getUserEdits(titleTemplate, bodyTemplate)
 
         await this.gitService.pushToRemote(selectedBranch)
@@ -68,8 +73,15 @@ export class OpenPrCommand {
             null
     }
 
-    private async getBodyTemplate(gitDirectory: string) {
+    private async getBodyTemplate(gitDirectory: string, issue: JiraIssue | null) {
+        const config = this.configService.prTemplateConfig()
+
         const templateFile = this.fileService.readFile(gitDirectory, '.github', 'PULL_REQUEST_TEMPLATE.md')
-        return templateFile || 'PR body goes here'
+
+        const base = templateFile || 'PR body goes here'
+        const withReplaced = this.transformService.doReplacements(base, config.replacements)
+        return this.transformService.substituteVariables(withReplaced, {
+            ...mapKeys(issue, (value, key) => 'issue.' + key)
+        })
     }
 }

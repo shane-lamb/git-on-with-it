@@ -74,6 +74,11 @@ export class GitService {
         await executeCommand(`git fetch --update-head-ok origin ${branchName}:${branchName}`)
     }
 
+    isRepo(): boolean {
+        const dir = this.fileService.getGitRepoRootDirectory()
+        return dir !== null
+    }
+
     @Memoize()
     private async getRepo(): Promise<Repository> {
         const dir = this.fileService.getGitRepoRootDirectory() as string

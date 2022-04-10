@@ -28,6 +28,7 @@
     "find-parent-dir": "^0.3.1",
     "inquirer": "^8.2.2",
     "jira-client": "^8.1.0",
+    "jira2md": "^2.1.0",
     "lodash": "^4.17.21",
     "nodegit": "^0.27.0",
     "reflect-metadata": "^0.1.13",

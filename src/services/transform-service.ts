@@ -1,5 +1,6 @@
 import { injectable, singleton } from 'tsyringe'
 import { escapeRegExp } from 'lodash'
+import jira2md from 'jira2md'
 
 @singleton()
 @injectable()
@@ -19,6 +20,10 @@ export class TransformService {
             const regex = new RegExp(escapeRegExp('${' + key + '}'), 'g')
             return prev.replace(regex, value)
         }, text)
+    }
+
+    jiraToGithubFormat(jiraText: string): string {
+        return jira2md.to_markdown(jiraText)
     }
 }
 

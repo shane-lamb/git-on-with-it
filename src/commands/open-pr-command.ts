@@ -1,12 +1,9 @@
-import { mapKeys } from 'lodash'
 import { injectable, singleton } from 'tsyringe'
 import { JiraIssue, JiraService } from '../services/jira-service'
-import { FileService } from '../services/file-service'
 import { PromptService } from '../services/prompt-service'
 import { GitService } from '../services/git-service'
 import { GithubService } from '../services/github-service'
-import { TransformService } from '../services/transform-service'
-import { ConfigService } from '../services/config-service'
+import { PrTemplateService } from '../services/pr-template-service'
 
 @singleton()
 @injectable()
@@ -14,17 +11,17 @@ export class OpenPrCommand {
     constructor(
         private jiraService: JiraService,
         private gitService: GitService,
-        private fileService: FileService,
         private promptService: PromptService,
         private githubService: GithubService,
-        private transformService: TransformService,
-        private configService: ConfigService,
+        private prTemplateService: PrTemplateService,
     ) {
     }
 
     async execute(): Promise<void> {
-        const gitDir = this.fileService.getGitRepoRootDirectory()
-        if (!gitDir) return
+        if(!this.gitService.isRepo()) {
+            console.log('Not git repository detected. Cancelling...')
+            return
+        }
 
         const selectedBranch = await this.gitService.getCurrentBranch()
         const baseBranch = await this.gitService.getBaseBranch(selectedBranch)
@@ -34,7 +31,7 @@ export class OpenPrCommand {
         const titleTemplate = issue ?
             `[${issue.key}] ${issue.summary}` :
             'PR title on this line'
-        const bodyTemplate = await this.getBodyTemplate(gitDir, issue)
+        const bodyTemplate = this.prTemplateService.getPrBody(issue)
         const [title, body] = await this.getUserEdits(titleTemplate, bodyTemplate)
 
         await this.gitService.pushToRemote(selectedBranch)
@@ -71,17 +68,5 @@ export class OpenPrCommand {
         return selected ?
             issues.find(issue => issue.key === selected) as JiraIssue :
             null
-    }
-
-    private async getBodyTemplate(gitDirectory: string, issue: JiraIssue | null) {
-        const config = this.configService.prTemplateConfig()
-
-        const templateFile = this.fileService.readFile(gitDirectory, '.github', 'PULL_REQUEST_TEMPLATE.md')
-
-        const base = templateFile || 'PR body goes here'
-        const withReplaced = this.transformService.doReplacements(base, config.replacements)
-        return this.transformService.substituteVariables(withReplaced, {
-            ...mapKeys(issue, (value, key) => 'issue.' + key)
-        })
     }
 }

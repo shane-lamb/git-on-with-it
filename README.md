@@ -66,6 +66,34 @@ node ./dist --help # list available commands
 node ./dist [command] # run command
 ```
 
+## Commands
+### Create Branch `create-branch`
+Create a branch that's based on a JIRA ticket/issue that's currently in development.
+
+The new branch will be named by a combination of JIRA issue ID/key and the title/summary of the ticket.
+
+### Open PR `open-pr`
+
+The meat and potatoes of this utility. Opens a PR with GitHub from the current branch, with context awareness of the associated JIRA ticket. Includes templating features to pre-fill the title and body of the PR.
+- If the associated JIRA ticket cannot be determined from the branch name, then the user is prompted to select from a list of issues that are currently in development.
+- The PR title is populated with the ID and title of the JIRA ticket
+- For the PR body:
+  - If there is a PR template at `.github/PULL_REQUEST_TEMPLATE.md`, that will be used as a base
+  - Then, replacements will be applied as specified in config
+  - Then, variable substitution will occur. To reference a variable, use the format `${variableName}`
+
+#### Available variables
+| Field | Description |
+| --- | --- |
+| `issue.key` | Identifier for the associated JIRA issue, can be used to form a URL/link to the issue
+| `issue.description` | Body of the issue
+| `issue.summary` | Title of the issue
+
+### Post PR `post-pr`
+Once the PR has been created, a typical next step is to post a message in Slack, or another messaging app, to notify your team members that the PR is ready for review.
+
+This command will copy such a message to the clipboard so that it can be pasted into a Slack channel.
+
 ## Design decisions
 `tsyringe` has been used as a lightweight dependency injection solution,
 in combination with a custom `createMock(ClassName)` utility method for testing.

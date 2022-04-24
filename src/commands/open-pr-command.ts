@@ -18,7 +18,7 @@ export class OpenPrCommand {
     }
 
     async execute(): Promise<void> {
-        if(!this.gitService.isRepo()) {
+        if (!this.gitService.isRepo()) {
             console.log('Not git repository detected. Cancelling...')
             return
         }
@@ -55,7 +55,11 @@ export class OpenPrCommand {
 
     private async getSelectedIssue(currentBranch: string): Promise<JiraIssue | null> {
         const issues = await this.jiraService.getIssuesInDevelopment()
-        if (!issues.length) return null
+        if (!issues.length) {
+            console.log('Could not find any JIRA issues "in development", continuing without JIRA issue context.')
+            console.log('Have you configured your JIRA status names correctly? It must be an exact match.')
+            return null
+        }
 
         const matchingIssue = issues.find(issue => currentBranch.includes(issue.key))
         if (matchingIssue) return matchingIssue

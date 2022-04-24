@@ -41,5 +41,5 @@ export class JiraService {
 export interface JiraIssue {
     summary: string
     key: string
-    description: string
+    description: string | null
 }

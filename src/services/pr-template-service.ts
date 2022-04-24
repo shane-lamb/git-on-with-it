@@ -25,14 +25,14 @@ export class PrTemplateService {
         const withReplaced = this.transformService.doReplacements(base, config.replacements)
 
         return this.transformService.substituteVariables(withReplaced, {
-            ...mapKeys(this.formatDescription(issue), (value, key) => 'issue.' + key),
+            ...mapKeys(this.formatDescription(issue) || {}, (value, key) => 'issue.' + key),
         })
     }
 
     formatDescription(issue: JiraIssue | null): JiraIssue | null {
         return issue ? {
             ...issue,
-            description: this.transformService.jiraToGithubFormat(issue.description),
+            description: issue.description ? this.transformService.jiraToGithubFormat(issue.description) : issue.description,
         } : null
     }
 }

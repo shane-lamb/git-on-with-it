@@ -2,30 +2,6 @@
 
 Command line workflows for git.
 
-Brainstormed possible features:
-- Convenience commands for syncing (and committing?) changes, local branch with remote branch?
-- Convenience commands for stashing/un-stashing
-- Command to create a branch
-  - Query "ready for development" and "in development" issues from JIRA
-  - User can select an issue, and the branch will be named using the issue ID
-    - If selected issue already has an associated local branch, then switch to that instead
-  - If current branch is not dev/main then auto-switch to dev/main
-  - Ensure that the base branch is up-to-date with remote
-  - Create the branch, switch to it, configure remote
-- Command to open a PR
-  - Query "ready for development" and "in development" issues from JIRA
-  - User can select an issue, and we'll use the issue ID and summary to pre-fill the PR title
-    - If branch is already named with an issue ID, then use that instead
-  - Open up vim (or other command line text editor) to edit PR title/description
-    - Use PULL_REQUEST_TEMPLATE as template if available in the current repo
-  - Create the PR on github
-  - Add labels to the PR?
-    - example: autoupdate
-  - Change status of the issue to "in review"
-  - Slack integration to post PR? or copy link to PR
-
-Initial focus will be on the PR opening functionality.
-
 ## Dependencies
 You must have the following installed and configured on your system:
 - [GitHub CLI](https://github.com/cli/cli)
@@ -107,19 +83,3 @@ you have to maintain application structure in two places, it's not automatically
 when you change it in the other.
 - Easier navigation via the file tree, hopping back and forth between tests and application code as is done often
 during development, and easy to see that a file has tests created for it.
-
-## Rough notes
-https://stackoverflow.com/questions/11269256/how-to-name-and-retrieve-a-stash-by-name-in-git
-```bash
-function gitstash() {
-    git stash push -m "stash_$1"
-}
-
-function gitstashapply() {
-    git stash apply $(git stash list | grep "stash_$1" | cut -d: -f1)
-}
-```
-gitstash nice
-gitstashapply nice
-
-https://github.com/octokit/octokit.net/issues/1862 - add label to PR

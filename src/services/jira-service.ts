@@ -36,6 +36,27 @@ export class JiraService {
             description: issue.fields.description,
         }))
     }
+
+    async getAllStatuses(): Promise<JiraStatus[]> {
+        const result = await this.api.listStatus()
+        return result.map(status => ({
+            name: status.name,
+            id: status.id,
+            categoryName: status.statusCategory.name,
+            categoryKey: status.statusCategory.key,
+            categoryId: status.statusCategory.id,
+            projectId: status.scope?.project?.id,
+        }))
+    }
+}
+
+export interface JiraStatus {
+    name: string
+    id: string
+    categoryName: string
+    categoryKey: string
+    categoryId: number
+    projectId?: string
 }
 
 export interface JiraIssue {

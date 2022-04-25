@@ -33,6 +33,11 @@ update() {
   build
 }
 
+test() {
+  cd "$__dir" || exit
+  npx jest
+}
+
 run() {
   node "$__dir"/dist "${@:1}"
 }

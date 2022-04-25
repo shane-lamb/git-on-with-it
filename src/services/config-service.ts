@@ -7,12 +7,17 @@ export interface AppConfig {
     jira: JiraConfig
     github: GithubConfig
     git: GitConfig
-    pullRequestTemplate: PrTemplateConfig
+    pullRequest: PullRequestConfig
     logOutputEnabled: boolean
 }
 
-export interface PrTemplateConfig {
+export interface PullRequestTemplateConfig {
     replacements: Transform[]
+}
+
+export interface PullRequestConfig {
+    template: PullRequestTemplateConfig
+    editInTerminal: boolean
 }
 
 export interface JiraConfig {
@@ -58,8 +63,8 @@ export class ConfigService {
         return this.readConfig().git
     }
 
-    prTemplateConfig(): PrTemplateConfig {
-        return this.readConfig().pullRequestTemplate
+    pullRequestConfig(): PullRequestConfig {
+        return this.readConfig().pullRequest
     }
 
     logOutputEnabled(): boolean {

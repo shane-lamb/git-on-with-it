@@ -1,5 +1,5 @@
 import { PrTemplateService } from './pr-template-service'
-import { ConfigService } from './config-service'
+import { ConfigService, PullRequestConfig } from './config-service'
 import { FileService } from './file-service'
 import { TransformService } from './transform-service'
 import { createMock } from '../test-util/create-mock'
@@ -17,12 +17,15 @@ describe('PR Template Service', () => {
         beforeEach(() => {
             // establish typical/happy path
 
-            configService.prTemplateConfig.mockReturnValue({
-                replacements: [{
-                    target: 'find',
-                    replaceWith: 'replace',
-                }],
-            })
+            const config: Partial<PullRequestConfig> = {
+                template: {
+                    replacements: [{
+                        target: 'find',
+                        replaceWith: 'replace',
+                    }],
+                },
+            }
+            configService.pullRequestConfig.mockReturnValue(config as PullRequestConfig)
 
             // we are in a git repo, and it has a pull request template file
             fileService.getGitRepoRootDirectory.mockReturnValue('/my-repo')

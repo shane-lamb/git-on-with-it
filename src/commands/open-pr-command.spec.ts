@@ -6,12 +6,14 @@ import { PromptService } from '../services/prompt-service'
 import { GitService } from '../services/git-service'
 import { GithubService } from '../services/github-service'
 import { PrTemplateService } from '../services/pr-template-service'
+import { ConfigService, PullRequestConfig } from '../services/config-service'
 
 const jiraService = createMock(JiraService)
 const gitService = createMock(GitService)
 const promptService = createMock(PromptService)
 const githubService = createMock(GithubService)
 const prTemplateService = createMock(PrTemplateService)
+const configService = createMock(ConfigService)
 
 const command = new OpenPrCommand(
     jiraService,
@@ -19,12 +21,18 @@ const command = new OpenPrCommand(
     promptService,
     githubService,
     prTemplateService,
+    configService,
 )
 
 describe('Opening a PR', () => {
     beforeEach(() => {
         // Set up happy/typical path as default,
         // behaviour can be overridden in individual tests.
+
+        const config: Partial<PullRequestConfig> = {
+            editInTerminal: false
+        }
+        configService.pullRequestConfig.mockReturnValue(config as PullRequestConfig)
 
         gitService.getCurrentBranch.mockResolvedValue('current-branch')
 
@@ -69,9 +77,25 @@ describe('Opening a PR', () => {
             expect(githubService.createPr).toBeCalledWith({
                 baseBranch: 'main-branch',
                 childBranch: 'current-branch',
+                title: '[ISSUEKEY1] summary 1',
+                body: 'pr body template',
+            })
+        })
+    })
+
+    describe('given "edit in terminal" is enabled', () => {
+        it('should allow the user to edit title & body in a terminal text editor', async () => {
+            const config: Partial<PullRequestConfig> = {
+                editInTerminal: true
+            }
+            configService.pullRequestConfig.mockReturnValue(config as PullRequestConfig)
+
+            await command.execute()
+
+            expect(githubService.createPr).toBeCalledWith(expect.objectContaining({
                 title: '[ISSUEKEY1] summary 1 - edited',
                 body: 'pr body template - edited',
-            })
+            }))
         })
     })
 
@@ -91,7 +115,7 @@ describe('Opening a PR', () => {
 
             expect(promptService.selectOption).toBeCalledTimes(0)
             expect(githubService.createPr).toBeCalledWith(expect.objectContaining({
-                title: '[ISSUEKEY1] summary 1 - edited',
+                title: '[ISSUEKEY1] summary 1',
             }))
         })
     })
@@ -113,7 +137,7 @@ describe('Opening a PR', () => {
             await command.execute()
 
             expect(githubService.createPr).toBeCalledWith(expect.objectContaining({
-                title: 'PR title on this line - edited',
+                title: 'PR title on this line',
             }))
         })
     })

@@ -4,6 +4,7 @@ import { PromptService } from '../services/prompt-service'
 import { GitService } from '../services/git-service'
 import { GithubService } from '../services/github-service'
 import { PrTemplateService } from '../services/pr-template-service'
+import { ConfigService } from '../services/config-service'
 
 @singleton()
 @injectable()
@@ -14,6 +15,7 @@ export class OpenPrCommand {
         private promptService: PromptService,
         private githubService: GithubService,
         private prTemplateService: PrTemplateService,
+        private configService: ConfigService,
     ) {
     }
 
@@ -45,6 +47,9 @@ export class OpenPrCommand {
     }
 
     private async getUserEdits(titleTemplate: string, bodyTemplate: string): Promise<[string, string]> {
+        const config = this.configService.pullRequestConfig()
+        if (!config.editInTerminal) return [titleTemplate, bodyTemplate]
+
         const editedText = await this.promptService.editText(`${titleTemplate}\n${bodyTemplate}`)
         const split = editedText.split('\n')
         const title = split[0]

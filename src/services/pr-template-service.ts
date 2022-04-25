@@ -16,7 +16,7 @@ export class PrTemplateService {
     }
 
     getPrBody(issue: JiraIssue | null): string {
-        const config = this.configService.prTemplateConfig()
+        const config = this.configService.pullRequestConfig().template
 
         const gitDirectory = this.fileService.getGitRepoRootDirectory()
         const templateFile = gitDirectory && this.fileService.readFile(gitDirectory, '.github', 'PULL_REQUEST_TEMPLATE.md')

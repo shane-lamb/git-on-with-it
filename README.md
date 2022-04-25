@@ -3,15 +3,15 @@
 Command line workflows for git.
 
 ## Dependencies
-You must have the following installed and configured on your system:
+You must have the following installed/configured on your system:
 - [GitHub CLI](https://github.com/cli/cli)
   - Used for PR creation
 - [Git](https://www.atlassian.com/git/tutorials/install-git)
   - Used to execute various CLI commands, like pushing a local branch to remote
-  - It's most likely already installed on your system
-- NodeJS
-  - Required to compile and execute the source code
-  - Using [nvm](https://github.com/nvm-sh/nvm) is a good way to install and switch between different Node versions on MacOS
+  - It's probably already installed, you can check with `git --version`
+- Python 3.6+
+  - Required to create a virtual environment in which NodeJS will be installed
+  - It's probably already installed, you can check with `python3 --version`
 
 ## Configuration
 The app/commands will look for a config file in the root named `app-config.json`. This will hold your credentials for the various integrations, amongst other things.
@@ -35,11 +35,29 @@ Description of the config fields:
 | `logOutputEnabled` | If set to `true`, debug logging will be outputted to the console during command execution
 
 ## Build & Run
+
+The bash script `git-on-with-it.sh` contains commands for building, updating, and running the utility.
+
 ```bash
-yarn install # install node dependencies
-tsc # transpile .ts files into .js files and place in /dist directory
-node ./dist --help # list available commands
-node ./dist [command] # run command
+# 1. Make the script file executable
+chmod +x git-on-with-it.sh 
+
+# 2. Build
+./git-on-with-it.sh build # build the utility so that we're ready to run commands
+# or
+./git-on-with-it.sh update # does a git pull first, then builds
+
+# 3. Run
+./git-on-with-it.sh run # list available commands
+./git-on-with-it.sh run [command] # run command
+```
+
+### Create an alias
+Creating an alias is handy for running `git-on-with-it` commands easily from anywhere within your terminal.
+
+If using zsh, add this line to your `~/.zshrc` file, substituting `~/source` for the parent directory of this repository on your machine:
+```bash
+alias giton='~/source/git-on-with-it/git-on-with-it.sh run'
 ```
 
 ## Commands

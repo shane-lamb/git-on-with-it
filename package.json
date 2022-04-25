@@ -34,8 +34,5 @@
     "reflect-metadata": "^0.1.13",
     "tsyringe": "^4.6.0",
     "typescript-memoize": "^1.1.0"
-  },
-  "scripts": {
-    "test": "jest"
   }
 }

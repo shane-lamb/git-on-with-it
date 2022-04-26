@@ -1,7 +1,7 @@
 import { injectable, singleton } from 'tsyringe'
 import { JiraIssue } from './jira-service'
 import { FileService } from './file-service'
-import { ConfigService } from './config-service'
+import { ConfigService } from './config/config-service'
 import { TransformService } from './transform-service'
 import { mapKeys } from 'lodash'
 

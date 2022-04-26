@@ -6,7 +6,8 @@ import { PromptService } from '../services/prompt-service'
 import { GitService } from '../services/git-service'
 import { GithubService } from '../services/github-service'
 import { PrTemplateService } from '../services/pr-template-service'
-import { ConfigService, PullRequestConfig } from '../services/config-service'
+import { ConfigService} from '../services/config/config-service'
+import { PullRequestConfig } from '../services/config/config-types'
 
 const jiraService = createMock(JiraService)
 const gitService = createMock(GitService)

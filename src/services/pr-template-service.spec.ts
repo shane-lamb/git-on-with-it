@@ -1,10 +1,11 @@
+import { when } from 'jest-when'
 import { PrTemplateService } from './pr-template-service'
-import { ConfigService, PullRequestConfig } from './config-service'
+import { ConfigService } from './config/config-service'
 import { FileService } from './file-service'
 import { TransformService } from './transform-service'
 import { createMock } from '../test-util/create-mock'
 import { JiraIssue } from './jira-service'
-import { when } from 'jest-when'
+import { PullRequestConfig } from './config/config-types'
 
 const configService = createMock(ConfigService)
 const fileService = createMock(FileService)

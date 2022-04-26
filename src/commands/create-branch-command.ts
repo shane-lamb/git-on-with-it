@@ -1,8 +1,9 @@
 import { injectable, singleton } from 'tsyringe'
 import { GitService } from '../services/git-service'
-import { ConfigService, GitConfig } from '../services/config-service'
+import { ConfigService } from '../services/config/config-service'
 import { JiraIssue, JiraService } from '../services/jira-service'
 import { PromptService } from '../services/prompt-service'
+import { GitConfig } from '../services/config/config-types'
 
 @injectable()
 @singleton()
@@ -11,17 +12,16 @@ export class CreateBranchCommand {
 
     constructor(
         private gitService: GitService,
-        configService: ConfigService,
+        private configService: ConfigService,
         private jiraService: JiraService,
         private promptService: PromptService,
     ) {
-        this.gitConfig = configService.gitConfig()
     }
 
     async execute() {
         const currentBranch = await this.gitService.getCurrentBranch()
 
-        if (!this.gitConfig.possibleBaseBranches.includes(currentBranch)) {
+        if (!this.configService.gitConfig().possibleBaseBranches.includes(currentBranch)) {
             console.log('The current branch isn\'t a base branch. Cancelling...')
             return
         }

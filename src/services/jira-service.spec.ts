@@ -2,7 +2,7 @@ import JiraApi from 'jira-client'
 import { when } from 'jest-when'
 
 import { JiraApiFactory, JiraService } from './jira-service'
-import { ConfigService } from './config-service'
+import { ConfigService } from './config/config-service'
 import { createMock } from '../test-util/create-mock'
 
 describe('JIRA Service', () => {

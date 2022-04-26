@@ -1,6 +1,7 @@
 import { injectable, singleton } from 'tsyringe';
-import { ConfigService, JiraConfig } from './config-service'
+import { Memoize } from 'typescript-memoize'
 import JiraApi, { JiraApiOptions } from 'jira-client'
+import { ConfigService } from './config/config-service'
 
 @singleton()
 export class JiraApiFactory {
@@ -12,22 +13,24 @@ export class JiraApiFactory {
 @singleton()
 @injectable()
 export class JiraService {
-    private config: JiraConfig
-    private api: JiraApi
+    constructor(private configService: ConfigService, private apiFactory: JiraApiFactory) {
+    }
 
-    constructor(configService: ConfigService, apiFactory: JiraApiFactory) {
-        this.config = configService.jiraConfig()
-        this.api = apiFactory.create({
+    @Memoize()
+    getApi() {
+        const config = this.configService.jiraConfig()
+        return this.apiFactory.create({
             protocol: 'https',
-            host: this.config.host,
-            username: this.config.userName,
-            password: this.config.apiToken,
+            host: config.host,
+            username: config.userName,
+            password: config.apiToken,
         })
     }
 
     async getIssuesInDevelopment(): Promise<JiraIssue[]> {
-        const result = await this.api.searchJira(
-            `status in ("${this.config.statuses.inDevelopment}") AND assignee in (${this.config.userId})`,
+        const config = this.configService.jiraConfig()
+        const result = await this.getApi().searchJira(
+            `status in ("${config.statuses.inDevelopment}") AND assignee in (${config.userId})`,
             {fields: ['summary', 'description']},
         )
         return result.issues.map(issue => ({
@@ -38,7 +41,7 @@ export class JiraService {
     }
 
     async getAllStatuses(): Promise<JiraStatus[]> {
-        const result = await this.api.listStatus()
+        const result = await this.getApi().listStatus()
         return result.map(status => ({
             name: status.name,
             id: status.id,

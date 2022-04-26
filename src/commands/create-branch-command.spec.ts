@@ -3,7 +3,7 @@ import { when } from 'jest-when'
 import { CreateBranchCommand } from './create-branch-command'
 import { createMock } from '../test-util/create-mock'
 import { GitService } from '../services/git-service'
-import { ConfigService } from '../services/config-service'
+import { ConfigService } from '../services/config/config-service'
 import { JiraIssue, JiraService } from '../services/jira-service'
 import { PromptService } from '../services/prompt-service'
 

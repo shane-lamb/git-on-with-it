@@ -22,7 +22,7 @@ export class CreateBranchCommand {
         const currentBranch = await this.gitService.getCurrentBranch()
 
         if (!this.configService.gitConfig().possibleBaseBranches.includes(currentBranch)) {
-            console.log('The current branch isn\'t a base branch. Cancelling...')
+            console.log('The current branch isn\'t configured as a base branch. Cancelling...')
             return
         }
 

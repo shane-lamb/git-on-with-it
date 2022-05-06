@@ -13,7 +13,8 @@
   "git": {
     "possibleBaseBranches": [
       "main",
-      "develop"
+      "develop",
+      "master"
     ]
   },
   "pullRequest": {

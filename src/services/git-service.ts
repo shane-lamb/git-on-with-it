@@ -2,6 +2,7 @@ import { injectable, singleton } from 'tsyringe'
 import { Commit, Merge, Reference, Repository } from 'nodegit'
 import { Memoize } from 'typescript-memoize'
 import { maxBy } from 'lodash'
+import execa, { ExecaError } from 'execa'
 
 import { executeCommand } from '../util/child-process-util'
 import { asyncMap, removeNulls } from '../util/functional'
@@ -61,7 +62,16 @@ export class GitService {
     }
 
     async createAndCheckoutBranch(branchName: string): Promise<void> {
-        await executeCommand(`git checkout -b ${branchName}`)
+        try {
+            await execa('git', ['checkout', '-b', branchName])
+        }
+        catch (error: any) {
+            const execaError = error as ExecaError
+            if (execaError.stderr) {
+                throw new AppError(execaError.stderr)
+            }
+            throw error
+        }
     }
 
     async pushToRemote(branchName: string): Promise<void> {

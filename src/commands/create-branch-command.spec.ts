@@ -6,6 +6,7 @@ import { GitService } from '../services/git-service'
 import { ConfigService } from '../services/config/config-service'
 import { JiraIssue, JiraService } from '../services/jira-service'
 import { PromptService } from '../services/prompt-service'
+import { TransformService } from '../services/transform-service'
 
 const gitService = createMock(GitService)
 const configService = createMock(ConfigService)
@@ -14,8 +15,9 @@ configService.gitConfig.mockReturnValue({
 })
 const jiraService = createMock(JiraService)
 const promptService = createMock(PromptService)
+const transformService = new TransformService()
 
-const command = new CreateBranchCommand(gitService, configService, jiraService, promptService)
+const command = new CreateBranchCommand(gitService, configService, jiraService, promptService, transformService)
 
 describe('Creating a branch', () => {
     beforeEach(() => {

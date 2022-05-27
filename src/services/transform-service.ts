@@ -22,6 +22,23 @@ export class TransformService {
         }, text)
     }
 
+    formatGitBranchName(unformattedName: string): string {
+        // todo: not all invalid cases will resolve yet
+        // see https://stackoverflow.com/a/12093994/16532962
+        const substitutions = [
+            [' ', '-'],
+            [':', '-'],
+            ['[', '('],
+            [']', ')'],
+        ]
+
+        return substitutions.reduce(
+            (result, [toReplace, replaceWith]) =>
+                result.replace(new RegExp('\\' + toReplace, 'g'), replaceWith),
+            unformattedName
+        ).replace(/\.$/, '')
+    }
+
     jiraToGithubFormat(jiraText: string): string {
         return jira2md.to_markdown(jiraText)
     }

@@ -4,6 +4,7 @@ import { ConfigService } from '../services/config/config-service'
 import { JiraIssue, JiraService } from '../services/jira-service'
 import { PromptService } from '../services/prompt-service'
 import { GitConfig } from '../services/config/config-types'
+import { TransformService } from '../services/transform-service'
 
 @injectable()
 @singleton()
@@ -15,6 +16,7 @@ export class CreateBranchCommand {
         private configService: ConfigService,
         private jiraService: JiraService,
         private promptService: PromptService,
+        private transformService: TransformService,
     ) {
     }
 
@@ -37,11 +39,8 @@ export class CreateBranchCommand {
 
         await this.gitService.fetchBranch(currentBranch)
 
-        await this.gitService.createAndCheckoutBranch(formatBranchName(issue.key + '/' + issue.summary))
+        await this.gitService.createAndCheckoutBranch(
+            this.transformService.formatGitBranchName(issue.key + '/' + issue.summary)
+        )
     }
-}
-
-function formatBranchName(name: string): string {
-    // todo: https://wincent.com/wiki/Legal_Git_branch_names
-    return name.replace(/ /g, '-')
 }

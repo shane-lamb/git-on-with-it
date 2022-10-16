@@ -1,9 +1,8 @@
-import { injectable, singleton } from 'tsyringe'
+import { injectable } from 'tsyringe'
 import { GithubService } from '../services/github-service'
 import { ClipboardService } from '../services/clipboard-service'
 
 @injectable()
-@singleton()
 export class PostPrCommand {
     constructor(
         private githubService: GithubService,

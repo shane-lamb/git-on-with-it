@@ -17,6 +17,14 @@ export interface JiraConfig {
     }
 }
 
+export interface CircleciConfig {
+    apiToken: string
+}
+
+export interface NotificationConfig {
+    senderApp: string
+}
+
 export const jiraConfigSchema = joi.object({
     userName: joi.string().required(),
     userId: joi.string().required(),
@@ -28,6 +36,14 @@ export const jiraConfigSchema = joi.object({
         inPrReview: joi.string().allow(''), // allow empty strings for now, as this is currently unused
     }),
 } as SchemaFor<JiraConfig>)
+
+export const circleciConfigSchema = joi.object({
+    apiToken: joi.string().required(),
+} as SchemaFor<CircleciConfig>)
+
+export const notificationConfigSchema = joi.object({
+    senderApp: joi.string().required(),
+} as SchemaFor<NotificationConfig>)
 
 export const pullRequestTemplateConfigSchema = joi.object({
     replacements: joi.array().required(),
@@ -57,6 +73,8 @@ export interface GitConfig {
 
 export const appConfigSchema = joi.object({
     jira: jiraConfigSchema,
+    circleci: circleciConfigSchema,
+    notification: notificationConfigSchema,
     git: gitConfigSchema,
     pullRequest: pullRequestConfigSchema,
     logOutputEnabled: joi.boolean().required(),
@@ -64,6 +82,8 @@ export const appConfigSchema = joi.object({
 
 export interface AppConfig {
     jira: JiraConfig
+    circleci: CircleciConfig
+    notification: NotificationConfig
     git: GitConfig
     pullRequest: PullRequestConfig
     logOutputEnabled: boolean

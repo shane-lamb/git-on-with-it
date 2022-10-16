@@ -1,7 +1,15 @@
 import { injectable, singleton } from 'tsyringe'
 import { Memoize } from 'typescript-memoize'
 import { FileService } from '../file-service'
-import { AppConfig, appConfigSchema, GitConfig, JiraConfig, PullRequestConfig } from './config-types'
+import {
+    AppConfig,
+    appConfigSchema,
+    CircleciConfig,
+    GitConfig,
+    JiraConfig,
+    NotificationConfig,
+    PullRequestConfig,
+} from './config-types'
 import { AppError } from '../../util/error'
 
 @singleton()
@@ -38,6 +46,14 @@ export class ConfigService {
 
     jiraConfig(): JiraConfig {
         return this.readConfig().jira
+    }
+
+    circleciConfig(): CircleciConfig {
+        return this.readConfig().circleci
+    }
+
+    notificationConfig(): NotificationConfig {
+        return this.readConfig().notification
     }
 
     gitConfig(): GitConfig {

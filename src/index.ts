@@ -5,9 +5,9 @@ import chalk from 'chalk'
 
 import { PromptService } from './services/prompt-service'
 import { OpenPrCommand } from './commands/open-pr-command'
-import { JiraService } from './services/jira-service'
 import { CreateBranchCommand } from './commands/create-branch-command'
 import { PostPrCommand } from './commands/post-pr-command'
+import { WatchCiCommand } from './commands/watch-ci-command'
 
 const program = new Command()
 
@@ -47,6 +47,10 @@ program.command('create-branch')
     .description('WIP command for creating a feature branch based on JIRA ticket')
     .action(commandRunner(CreateBranchCommand))
 
+program.command('watch-ci')
+    .description('WIP command for monitoring CI and PR activity related to current branch')
+    .action(commandRunner(WatchCiCommand))
+
 program.command('test-prompt-service')
     .description('Temporary command to test PromptService')
     .action(async () => {
@@ -56,13 +60,6 @@ program.command('test-prompt-service')
             {id: 'b', description: 'option B'},
         ], "Make a selection")
         console.log(JSON.stringify(config))
-    })
-
-program.command('test-jira-service')
-    .description('Temporary command to test JiraService')
-    .action(async () => {
-        const service = container.resolve(JiraService)
-        await service.getIssuesInDevelopment()
     })
 
 program.parse()

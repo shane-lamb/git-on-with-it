@@ -1,4 +1,4 @@
-import { injectable, singleton } from 'tsyringe'
+import { injectable } from 'tsyringe'
 import { JiraIssue, JiraService } from '../services/jira-service'
 import { PromptService } from '../services/prompt-service'
 import { GitService } from '../services/git-service'
@@ -6,7 +6,6 @@ import { GithubService } from '../services/github-service'
 import { PrTemplateService } from '../services/pr-template-service'
 import { ConfigService } from '../services/config/config-service'
 
-@singleton()
 @injectable()
 export class OpenPrCommand {
     constructor(

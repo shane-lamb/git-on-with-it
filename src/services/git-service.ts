@@ -78,6 +78,11 @@ export class GitService {
         await executeCommand(`git push --set-upstream origin ${branchName}`)
     }
 
+    async getRemoteUrl(): Promise<string> {
+        const result = await execa('git', ['ls-remote', '--get-url'])
+        return result.stdout
+    }
+
     async fetchBranch(branchName: string) {
         await executeCommand(`git fetch --update-head-ok origin ${branchName}:${branchName}`)
     }

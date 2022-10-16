@@ -1,16 +1,12 @@
-import { injectable, singleton } from 'tsyringe'
+import { injectable } from 'tsyringe'
 import { GitService } from '../services/git-service'
 import { ConfigService } from '../services/config/config-service'
 import { JiraIssue, JiraService } from '../services/jira-service'
 import { PromptService } from '../services/prompt-service'
-import { GitConfig } from '../services/config/config-types'
 import { TransformService } from '../services/transform-service'
 
 @injectable()
-@singleton()
 export class CreateBranchCommand {
-    gitConfig: GitConfig
-
     constructor(
         private gitService: GitService,
         private configService: ConfigService,

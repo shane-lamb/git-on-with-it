@@ -1,12 +1,12 @@
 import { injectable } from 'tsyringe'
 import { GithubService } from '../services/github-service'
-import { ClipboardService } from '../services/clipboard-service'
+import { OsService } from '../services/os-service'
 
 @injectable()
 export class PostPrCommand {
     constructor(
         private githubService: GithubService,
-        private clipboard: ClipboardService,
+        private osService: OsService,
     ) {
     }
 
@@ -16,7 +16,7 @@ export class PostPrCommand {
             const [, ...titleParts] = prInfo.title.split(' ')
             const title = titleParts.join(' ')
             const text = `[PR for review](${prInfo.url}): ${title}`
-            await this.clipboard.copy(text)
+            await this.osService.copyToClipboard(text)
             console.log('Copied text to clipboard:\n' + text)
         } else {
             console.log('Couldn\'t find a PR associated with the current branch.')

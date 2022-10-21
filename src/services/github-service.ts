@@ -56,7 +56,7 @@ export interface PrInfo {
         color: string // example: 'ededed'
         description: string
     }[]
-    mergeStateStatus: 'BEHIND' | 'UNKNOWN',
+    mergeStateStatus: 'BEHIND' | 'UNKNOWN' | 'BLOCKED',
     mergeable: 'MERGEABLE' | 'UNKNOWN',
     reviewDecision: 'REVIEW_REQUIRED' | 'APPROVED',
     state: 'OPEN' | 'MERGED',

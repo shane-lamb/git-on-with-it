@@ -1,10 +1,11 @@
 import { injectable } from 'tsyringe'
-import { NotifyService } from '../services/notify-service'
 import { TimeService } from '../services/time-service'
 import { GitService } from '../services/git-service'
 import { CiStatus, CiStatusService } from '../services/ci-status-service'
 import { isEqual } from 'lodash'
 import { LogService } from '../services/log-service'
+import { NotificationStateService, Notification } from '../services/notification-state-service'
+import { OsService } from '../services/os-service'
 
 @injectable()
 export class WatchCiCommand {
@@ -12,12 +13,14 @@ export class WatchCiCommand {
     gitRemoteUrl: string
     branchName: string
     lastState?: CiStatus
+    acknowledgedJobIds: {[jobId: string]: boolean} = {}
 
     constructor(
         private gitService: GitService,
-        private notifyService: NotifyService,
+        private notificationStateService: NotificationStateService,
         private timeService: TimeService,
         private ciStatusService: CiStatusService,
+        private osService: OsService,
         private log: LogService,
     ) {
     }
@@ -59,18 +62,65 @@ export class WatchCiCommand {
     private async doNotifications(state: CiStatus) {
         const { prStatus, pipelineStatus } = state
 
-        if (prStatus === 'merged') return this.notify('PR merged! Have a nice day')
+        if (prStatus === 'merged') {
+            return this.notify({ message: 'PR merged, have a nice day' })
+        }
 
-        if (pipelineStatus === 'not_found') return this.notify('Waiting for CircleCI run')
-
-        if (pipelineStatus === 'succeeded') {
-            if (prStatus === 'not_created') return this.notify('CircleCI success! Waiting for PR to be opened')
-            if (prStatus === 'needs_approval') return this.notify('All green! Waiting for PR approval')
-            if (prStatus === 'ready_to_merge') return this.notify('Ready to merge!')
+        switch (pipelineStatus) {
+            case 'not_found':
+                this.notify({message:'Waiting for pipeline run'}).then()
+                break
+            case 'succeeded':
+                switch (prStatus) {
+                    case 'not_created':
+                        this.notify({message:'Build green, waiting for PR to be opened'}).then()
+                        break
+                    case 'is_behind':
+                        this.notify({message:'Branch needs updating', url: state.prUrl}).then()
+                        break
+                    case 'needs_approval':
+                        this.notify({message:'Build green, waiting for PR approval', url: state.prUrl}).then()
+                        break
+                    case 'ready_to_merge':
+                        this.notify({message:'PR ready to merge', url: state.prUrl}).then()
+                        break
+                }
+                break
+            case 'failed':
+                const jobs = state.failedJobs
+                    .filter(job => !this.acknowledgedJobIds[job.id])
+                    .map(job => ({
+                        message: `${job.name} failed`,
+                        jobId: job.id,
+                        url: job.url,
+                    }))
+                this.notify(...jobs).then()
+                break
+            case 'running':
+                this.notify().then()
         }
     }
 
-    private async notify(message: string) {
-        await this.notifyService.notify(this.branchName, message)
+    private notify(...notifications: {message: string, jobId?: string, url?: string}[]) {
+        return this.notificationStateService.setState(
+            notifications.map(({jobId, message, url}) => {
+                const params: Notification = {
+                    details: {
+                        subtitle: this.branchName,
+                            message
+                    },
+                    handler: async ({activationType}) => {
+                        if (jobId) {
+                            this.acknowledgedJobIds[jobId] = true
+                        }
+                        if (url && ['contentsClicked', 'actionClicked'].includes(activationType)) {
+                            await this.osService.openUrl(url)
+                        }
+                    },
+                    id: jobId
+                }
+                return params
+            })
+        )
     }
 }

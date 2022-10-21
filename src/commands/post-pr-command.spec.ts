@@ -1,12 +1,12 @@
 import { PostPrCommand } from './post-pr-command'
 import { createMock } from '../test-util/create-mock'
 import { GithubService, PrInfo } from '../services/github-service'
-import { ClipboardService } from '../services/clipboard-service'
+import { OsService } from '../services/os-service'
 
 const githubService = createMock(GithubService)
-const clipboardService = createMock(ClipboardService)
+const osService = createMock(OsService)
 
-const command = new PostPrCommand(githubService, clipboardService)
+const command = new PostPrCommand(githubService, osService)
 
 describe('Posting/communicating a PR', () => {
     describe('given theres a PR associated with the current branch', () => {
@@ -19,7 +19,7 @@ describe('Posting/communicating a PR', () => {
 
             await command.execute()
 
-            expect(clipboardService.copy).toBeCalledWith('[PR for review](https://google.com): My feature')
+            expect(osService.copyToClipboard).toBeCalledWith('[PR for review](https://google.com): My feature')
         })
     })
     describe('given theres not a PR associated with the current branch', () => {
@@ -28,7 +28,7 @@ describe('Posting/communicating a PR', () => {
 
             await command.execute()
 
-            expect(clipboardService.copy).toBeCalledTimes(0)
+            expect(osService.copyToClipboard).toBeCalledTimes(0)
         })
     })
 })

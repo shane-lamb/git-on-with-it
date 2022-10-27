@@ -20,7 +20,7 @@ export interface CircleWorkflow {
 
 export interface CircleJob {
     id: string
-    status: 'success' | 'blocked' | 'failed' | 'canceled'
+    status: 'success' | 'blocked' | 'failed' | 'canceled' | 'on_hold' | 'running' | 'not_running'
     name: string
     type: 'build' | 'approval'
     started_at: string | null

@@ -87,17 +87,26 @@ export class WatchCiCommand {
                 }
                 break
             case 'failed':
-                const jobs = state.failedJobs
+                const failedJobs = state.failedJobs
                     .filter(job => !this.acknowledgedJobIds[job.id])
                     .map(job => ({
                         message: `${job.name} failed`,
                         jobId: job.id,
                         url: job.url,
                     }))
-                this.notify(...jobs).then()
+                this.notify(...failedJobs).then()
+                break
+            case 'needs_approval':
+                const approvalJobs = state.approvalJobs
+                    .filter(job => !this.acknowledgedJobIds[job.id])
+                    .map(job => ({
+                        message: `${job.name} pending approval`,
+                        jobId: job.id,
+                        url: job.url,
+                    }))
+                this.notify(...approvalJobs).then()
                 break
             case 'running':
-                this.notify().then()
         }
     }
 
@@ -106,7 +115,7 @@ export class WatchCiCommand {
             notifications.map(({jobId, message, url}) => {
                 const params: Notification = {
                     details: {
-                        subtitle: this.branchName,
+                        title: this.branchName,
                             message
                     },
                     handler: async ({activationType}) => {

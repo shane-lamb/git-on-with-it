@@ -37,7 +37,8 @@ export class GithubService {
         )
         const info = result.errorOut ? null : JSON.parse(result.standardOut) as PrInfo
         if (!isEqual(this.lastPrInfo, info)) {
-            this.log.write('PR info changed', { info })
+            // disabled logging for now as it's producing alot of noise.
+            // this.log.write('PR info changed', { info })
             this.lastPrInfo = info
         }
         return info

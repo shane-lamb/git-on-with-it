@@ -8,7 +8,7 @@ export interface NotificationResult {
 }
 
 export interface NotificationDetails {
-    subtitle?: string
+    title?: string
     message: string
     action?: string
     timeoutSeconds?: number
@@ -20,11 +20,10 @@ export class NotifyService {
     constructor(private config: ConfigService) {
     }
 
-    async notify({subtitle, message, action, timeoutSeconds}: NotificationDetails, groupId?: string): Promise<NotificationResult> {
+    async notify({title, message, action, timeoutSeconds}: NotificationDetails, groupId?: string): Promise<NotificationResult> {
         const { senderApp } = this.config.notificationConfig()
         const result = await execa('alerter', [
-            '-title', 'git-on-with-it',
-            ...(subtitle ? ['-subtitle', subtitle] : []),
+            ...(title ? ['-title', title] : []),
             '-message', message,
             // could use closeLabel as a safe way to add a dropdown and second action option
             // '-closeLabel', 'another dropdown option',
@@ -40,7 +39,7 @@ export class NotifyService {
 
     async clearNotification(groupId: string) {
         await this.notify({
-            subtitle: 'Removed',
+            title: 'Removed',
             message: '',
             timeoutSeconds: 1,
         }, groupId)

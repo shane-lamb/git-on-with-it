@@ -1,6 +1,7 @@
 import { injectable } from 'tsyringe'
 import { NotificationDetails, NotificationResult, NotifyService } from './notify-service'
 import { without, keyBy, mapValues, remove } from 'lodash'
+import { randomBytes } from 'crypto'
 
 export interface Notification {
     details: NotificationDetails,
@@ -10,11 +11,13 @@ export interface Notification {
 
 @injectable()
 export class NotificationStateService {
-    constructor(private notifyService: NotifyService) {
-    }
-
     notificationIds: {[id: string]: number} = {}
     unattachedGroupIds: number[] = []
+    // randomise beginning of group IDs, so we don't get conflicts between apps using this service
+    baseGroupId = randomBytes(5).toString('hex')
+
+    constructor(private notifyService: NotifyService) {
+    }
 
     private getAllGroupIds() {
         return this.unattachedGroupIds.concat(Object.values(this.notificationIds))
@@ -48,7 +51,7 @@ export class NotificationStateService {
 
         const toCreate = newNotifications.map(({id, details, handler}) => {
             const groupId = this.getNextGroupId(id)
-            return this.notifyService.notify(details, 'GROUP_' + groupId)
+            return this.notifyService.notify(details, this.baseGroupId + groupId)
                 .then(async (result: NotificationResult) => {
                     if (handler) {
                         await handler(result)
@@ -64,7 +67,7 @@ export class NotificationStateService {
         // work out what to delete
         const newGroupIds = this.getAllGroupIds()
         const toDelete = without(oldGroupIds, ...newGroupIds)
-            .map(id => this.notifyService.clearNotification('GROUP_' + id))
+            .map(id => this.notifyService.clearNotification(this.baseGroupId + id))
 
         await Promise.all([...toCreate, ...toDelete])
     }

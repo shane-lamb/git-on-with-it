@@ -6,10 +6,12 @@ import { when } from 'jest-when'
 describe('notification state service', () => {
     const mockNotifyService = createMock(NotifyService)
     let service: NotificationStateService
+    let baseGroupId: string
 
     beforeEach(() => {
         jest.resetAllMocks()
         service = new NotificationStateService(mockNotifyService)
+        baseGroupId = service.baseGroupId
     })
 
     it('should display notification and call handler when actioned', async () => {
@@ -27,7 +29,7 @@ describe('notification state service', () => {
             }
         }])
 
-        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm1' }, 'GROUP_0')
+        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm1' }, baseGroupId + 0)
         expect(handlerCalled).toBeTruthy()
     })
     it('should replace notification when not using ID', async () => {
@@ -44,7 +46,7 @@ describe('notification state service', () => {
         }])
 
         expect(mockNotifyService.notify).toBeCalledTimes(1)
-        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm1' }, 'GROUP_0')
+        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm1' }, baseGroupId + 0)
 
         when(mockNotifyService.notify)
             .mockImplementation(async _ => {
@@ -59,7 +61,7 @@ describe('notification state service', () => {
         }])
 
         expect(mockNotifyService.notify).toBeCalledTimes(2)
-        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm2' }, 'GROUP_0')
+        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm2' }, baseGroupId + 0)
 
         await setState1
     })
@@ -79,7 +81,7 @@ describe('notification state service', () => {
         }])
 
         expect(mockNotifyService.notify).toBeCalledTimes(1)
-        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm1' }, 'GROUP_0')
+        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm1' }, baseGroupId + 0)
 
         when(mockNotifyService.notify)
             .mockImplementation(async _ => {
@@ -118,16 +120,16 @@ describe('notification state service', () => {
         }])
 
         expect(mockNotifyService.notify).toBeCalledTimes(1)
-        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm1' }, 'GROUP_0')
+        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm1' }, baseGroupId + 0)
 
         when(mockNotifyService.clearNotification)
-            .calledWith('GROUP_0')
+            .calledWith(baseGroupId + 0)
             .mockResolvedValue()
 
         await service.setState([])
 
         expect(mockNotifyService.notify).toBeCalledTimes(1)
-        expect(mockNotifyService.clearNotification).toBeCalledWith('GROUP_0')
+        expect(mockNotifyService.clearNotification).toBeCalledWith(baseGroupId + 0)
 
         await closeMessage1!()
         await setState1
@@ -146,8 +148,8 @@ describe('notification state service', () => {
             }
         }])
 
-        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm1' }, 'GROUP_0')
-        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm2' }, 'GROUP_1')
+        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm1' }, baseGroupId + 0)
+        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm2' }, baseGroupId + 1)
     })
     it.each([
         ['without ID', undefined],
@@ -168,12 +170,12 @@ describe('notification state service', () => {
         }])
 
         expect(mockNotifyService.notify).toBeCalledTimes(1)
-        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm1' }, 'GROUP_0')
+        expect(mockNotifyService.notify).toBeCalledWith({ message: 'm1' }, baseGroupId + 0)
 
         await closeMessage1!()
 
         when(mockNotifyService.clearNotification)
-            .calledWith('GROUP_0')
+            .calledWith(baseGroupId + 0)
             .mockResolvedValue()
 
         await service.setState([])

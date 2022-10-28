@@ -60,13 +60,17 @@ export class CiStatusService {
         const failedWorkflows = uniqueWorkflows.filter(workflow => ['failed', 'failing'].includes(workflow.status))
         const onHoldWorkflows = uniqueWorkflows.filter(workflow => workflow.status === 'on_hold')
         const incompleteWorkflows = uniqueWorkflows.filter(workflow => ['running', 'on_hold'].includes(workflow.status))
-        const onHoldWorkflowJobs = await this.getWorkflowJobs(onHoldWorkflows)
+
+        const [ onHoldWorkflowJobs, failedJobs ] = await Promise.all([
+            this.getWorkflowJobs(onHoldWorkflows),
+            this.getFailedJobs(failedWorkflows, projectSlug),
+        ])
 
         return {
             pipelineStatus: failedWorkflows.length ? 'failed' :
                 incompleteWorkflows.length ? this.getIncompleteStatus(onHoldWorkflowJobs) : 'succeeded',
-            failedJobs: await this.getFailedJobs(failedWorkflows, projectSlug),
-            approvalJobs: await this.getApprovalJobs(onHoldWorkflowJobs, projectSlug),
+            failedJobs,
+            approvalJobs: this.getApprovalJobs(onHoldWorkflowJobs, projectSlug),
         }
     }
 
@@ -101,7 +105,7 @@ export class CiStatusService {
         return flatten(workflowResults)
     }
 
-    private async getApprovalJobs(onHoldWorkflowJobs: CircleJobWithWorkflow[], projectSlug: string): Promise<CiJobStatus[]> {
+    private getApprovalJobs(onHoldWorkflowJobs: CircleJobWithWorkflow[], projectSlug: string): CiJobStatus[] {
         const baseUrl = this.getCircleciBaseUrl(projectSlug)
         return onHoldWorkflowJobs
             .filter(job => job.type === 'approval')

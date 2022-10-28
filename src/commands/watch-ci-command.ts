@@ -7,6 +7,8 @@ import { LogService } from '../services/log-service'
 import { NotificationStateService, Notification } from '../services/notification-state-service'
 import { OsService } from '../services/os-service'
 
+type CiNotification = {message: string, jobId?: string, url?: string}
+
 @injectable()
 export class WatchCiCommand {
     done = false
@@ -43,20 +45,25 @@ export class WatchCiCommand {
             await this.setup()
         }
 
-        const currentState = await this.ciStatusService.getStatus(this.branchName, this.gitRemoteUrl)
-        if (isEqual(currentState, this.lastState)) {
-            return
-        } else {
-            this.log.write('CI status changed', currentState)
+        try {
+            const currentState = await this.ciStatusService.getStatus(this.branchName, this.gitRemoteUrl)
+
+            if (isEqual(currentState, this.lastState)) {
+                return
+            } else {
+                this.log.write('CI status changed', currentState)
+            }
+
+            await this.doNotifications(currentState)
+
+            if (currentState.prStatus === 'merged') {
+                this.done = true
+            }
+
+            this.lastState = currentState
+        } catch (ex) {
+            console.log('Error encountered', ex)
         }
-
-        await this.doNotifications(currentState)
-
-        if (currentState.prStatus === 'merged') {
-            this.done = true
-        }
-
-        this.lastState = currentState
     }
 
     private async doNotifications(state: CiStatus) {
@@ -68,21 +75,21 @@ export class WatchCiCommand {
 
         switch (pipelineStatus) {
             case 'not_found':
-                this.notify({message:'Waiting for pipeline run'}).then()
+                this.notify({ message:'Waiting for pipeline run' })
                 break
             case 'succeeded':
                 switch (prStatus) {
                     case 'not_created':
-                        this.notify({message:'Build green, waiting for PR to be opened'}).then()
+                        this.notify({message:'Build green, waiting for PR to be opened'})
                         break
                     case 'is_behind':
-                        this.notify({message:'Branch needs updating', url: state.prUrl}).then()
+                        this.notify({message:'Branch needs updating', url: state.prUrl})
                         break
                     case 'needs_approval':
-                        this.notify({message:'Build green, waiting for PR approval', url: state.prUrl}).then()
+                        this.notify({message:'Build green, waiting for PR approval', url: state.prUrl})
                         break
                     case 'ready_to_merge':
-                        this.notify({message:'PR ready to merge', url: state.prUrl}).then()
+                        this.notify({message:'PR ready to merge', url: state.prUrl})
                         break
                 }
                 break
@@ -94,7 +101,7 @@ export class WatchCiCommand {
                         jobId: job.id,
                         url: job.url,
                     }))
-                this.notify(...failedJobs).then()
+                this.notify(...failedJobs)
                 break
             case 'needs_approval':
                 const approvalJobs = state.approvalJobs
@@ -104,14 +111,14 @@ export class WatchCiCommand {
                         jobId: job.id,
                         url: job.url,
                     }))
-                this.notify(...approvalJobs).then()
+                this.notify(...approvalJobs)
                 break
             case 'running':
         }
     }
 
-    private notify(...notifications: {message: string, jobId?: string, url?: string}[]) {
-        return this.notificationStateService.setState(
+    private notify(...notifications: CiNotification[]) {
+        this.notificationStateService.setState(
             notifications.map(({jobId, message, url}) => {
                 const params: Notification = {
                     details: {
@@ -130,6 +137,6 @@ export class WatchCiCommand {
                 }
                 return params
             })
-        )
+        ).catch(error => console.log('Error encountered when setting notification state', error)).then()
     }
 }

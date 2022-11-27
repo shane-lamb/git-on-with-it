@@ -185,7 +185,7 @@ describe('notification state service', () => {
 
         await setState1
     })
-    it('should display notification again with the same ID, if it was closed inbetween', async () => {
+    it('should display notification again with the same ID, if it was cleared from state inbetween', async () => {
         when(mockNotifyService.notify)
             .mockResolvedValue({ activationType: 'closed' })
 
@@ -196,6 +196,9 @@ describe('notification state service', () => {
             id: 'my_id'
         }])
 
+        // cleared from state inbetween
+        await service.setState([])
+
         await service.setState([{
             details: {
                 message: 'm2',
@@ -204,5 +207,29 @@ describe('notification state service', () => {
         }])
 
         expect(mockNotifyService.notify).toBeCalledTimes(2)
+    })
+    it('should not re-open notification (having same ID) after being dismissed (and not yet cleared from state)', async () => {
+        // notifications are dismissed immediately
+        when(mockNotifyService.notify)
+            .mockResolvedValue({activationType: 'closed'})
+
+        // given a notification is created,
+        await service.setState([{
+            details: {
+                message: 'm1',
+            },
+            id: 'my_id'
+        }])
+        // then dismissed,
+        // then a notification with the same ID is included in the next call to setState,
+        await service.setState([{
+            details: {
+                message: 'm2',
+            },
+            id: 'my_id'
+        }])
+
+        // we shouldn't open a new notification for this ID, since it's been dismissed already
+        expect(mockNotifyService.notify).toBeCalledTimes(1)
     })
 })

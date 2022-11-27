@@ -12,6 +12,7 @@ export interface Notification {
 @injectable()
 export class NotificationStateService {
     notificationIds: {[id: string]: number} = {}
+    alreadyClosedGroupIds: number[] = [] // todo: simplify the overall logic, it's becoming messy
     unattachedGroupIds: number[] = []
     // randomise beginning of group IDs, so we don't get conflicts between apps using this service
     baseGroupId = randomBytes(5).toString('hex')
@@ -57,7 +58,7 @@ export class NotificationStateService {
                         await handler(result)
                     }
                     if (id) {
-                        delete this.notificationIds[id]
+                        this.alreadyClosedGroupIds.push(groupId)
                     } else {
                         this.unattachedGroupIds = remove(this.unattachedGroupIds, groupId)
                     }
@@ -66,8 +67,9 @@ export class NotificationStateService {
 
         // work out what to delete
         const newGroupIds = this.getAllGroupIds()
-        const toDelete = without(oldGroupIds, ...newGroupIds)
+        const toDelete = without(oldGroupIds, ...newGroupIds, ...this.alreadyClosedGroupIds)
             .map(id => this.notifyService.clearNotification(this.baseGroupId + id))
+        this.alreadyClosedGroupIds = []
 
         await Promise.all([...toCreate, ...toDelete])
     }

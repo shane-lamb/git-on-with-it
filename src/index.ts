@@ -8,6 +8,7 @@ import { OpenPrCommand } from './commands/open-pr-command'
 import { CreateBranchCommand } from './commands/create-branch-command'
 import { PostPrCommand } from './commands/post-pr-command'
 import { WatchCiCommand } from './commands/watch-ci-command'
+import { PrDaemonCommand } from './commands/pr-daemon-command'
 
 const program = new Command()
 
@@ -50,6 +51,10 @@ program.command('create-branch')
 program.command('watch-ci')
     .description('WIP command for monitoring CI and PR activity related to current branch')
     .action(commandRunner(WatchCiCommand))
+
+program.command('pr-daemon')
+    .description('WIP command for monitoring status of open PRs and notifying of changes')
+    .action(commandRunner(PrDaemonCommand))
 
 program.command('test-prompt-service')
     .description('Temporary command to test PromptService')

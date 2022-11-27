@@ -84,7 +84,7 @@ export interface PrInfo {
 
 type StatusCheck = CheckRunStatusCheck | StatusContextStatusCheck
 
-interface CheckRunStatusCheck {
+export interface CheckRunStatusCheck {
     __typename: 'CheckRun'
     name: string
     status: 'COMPLETED'
@@ -92,9 +92,9 @@ interface CheckRunStatusCheck {
     detailsUrl: string
 }
 
-interface StatusContextStatusCheck {
+export interface StatusContextStatusCheck {
     __typename: 'StatusContext'
-    state: 'PENDING' | 'SUCCESS'
-    context: string
+    state: 'PENDING' | 'SUCCESS' | 'FAILURE'
+    context: string  // title/name of job
     targetUrl: string
 }

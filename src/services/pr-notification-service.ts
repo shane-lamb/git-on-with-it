@@ -25,8 +25,6 @@ export class PrNotificationService {
     async getNotifications(prUrl: string): Promise<Notification[]> {
         const details = await this.githubStatusService.getStatusDetails(prUrl)
 
-        // todo: if required, get CircleCI status
-
         if (details.status === 'errored') {
             return details.failedChecks.map(check => {
                 const { url, name } = check
@@ -39,6 +37,22 @@ export class PrNotificationService {
                     handler: url ? this.openUrlIfContentsClicked(url) : undefined,
                 }
             })
+        }
+
+        if (details.status === 'running_checks') {
+            const circleSummary = await this.circleSummaryService.getSummary(details.branchName, getCircleProjectSlug(prUrl))
+            if (circleSummary.pipelineStatus === 'needs_approval') {
+                return circleSummary.approvalJobs.map(job => {
+                    return {
+                        id: job.id,
+                        details: {
+                            title: details.branchName,
+                            message: 'Awaiting ' + job.name,
+                        },
+                        handler: this.openUrlIfContentsClicked(job.url),
+                    }
+                })
+            }
         }
 
         return [{
@@ -71,16 +85,22 @@ function mapGitHubStatusToMessage(status: GithubPrStatus): string {
         case 'in_draft':
             return 'Waiting in draft'
         case 'requires_approval':
-            return 'Needs approval'
+            return 'PR needs approval'
         case 'ready_to_merge':
             return 'Ready to merge'
         case 'merged':
             return 'PR merged!'
         default:
-            return '[Not Implemented]'
+            return '[Not implemented]'
     }
 }
 
 function cleanUpCheckName(checkName: string) {
     return checkName.replace('ci/circleci: ', '')
+}
+
+function getCircleProjectSlug(githubPrUrl: string) {
+    return githubPrUrl
+        .replace('https://github.com', 'gh')
+        .replace(/\/pull\/.+$/, '')
 }

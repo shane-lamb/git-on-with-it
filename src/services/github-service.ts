@@ -75,8 +75,8 @@ export interface PrInfo {
         color: string // example: 'ededed'
         description: string
     }[]
-    mergeStateStatus: 'BEHIND' | 'UNKNOWN' | 'BLOCKED'
-    mergeable: 'MERGEABLE' | 'UNKNOWN'
+    mergeStateStatus: 'BEHIND' | 'UNKNOWN' | 'BLOCKED' | 'DIRTY'
+    mergeable: 'MERGEABLE' | 'UNKNOWN' | 'CONFLICTING'
     reviewDecision: 'REVIEW_REQUIRED' | 'APPROVED'
     state: 'OPEN' | 'MERGED'
     statusCheckRollup: StatusCheck[]

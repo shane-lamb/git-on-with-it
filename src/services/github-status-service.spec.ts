@@ -97,6 +97,31 @@ describe('GitHub status service', () => {
         }
         expect(result).toEqual(expected)
     })
+    it('should show when merge_conflict', async () => {
+        when(githubService.getPrInfo).calledWith(prUrl).mockResolvedValue({
+            ...defaults,
+            mergeStateStatus: 'DIRTY',
+            mergeable: 'CONFLICTING',
+            isDraft: true,
+            reviewDecision: 'REVIEW_REQUIRED',
+            statusCheckRollup: [{
+                __typename: 'StatusContext',
+                context: 'ci/circleci: lint',
+                state: 'PENDING',
+                targetUrl: 'https://circleci.com/gh/my-org/my-repo/445566',
+            }],
+        })
+
+        const result = await service.getStatusDetails(prUrl)
+
+        const expected: GithubPrStatusDetails = {
+            status: 'merge_conflict',
+            failedChecks: [],
+            runningChecks: expect.anything(),
+            branchName
+        }
+        expect(result).toEqual(expected)
+    })
     it('should show when running_checks', async () => {
         when(githubService.getPrInfo).calledWith(prUrl).mockResolvedValue({
             ...defaults,

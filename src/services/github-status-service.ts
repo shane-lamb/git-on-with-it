@@ -46,11 +46,12 @@ export class GithubStatusService {
 
         return {
             status: failedChecks.length ? 'errored' :
-                info.mergeStateStatus === 'BEHIND' ? 'is_behind' :
-                    runningChecks.length ? 'running_checks' :
-                        info.isDraft ? 'in_draft' :
-                            info.reviewDecision === 'REVIEW_REQUIRED' ? 'requires_approval' :
-                                info.state === 'MERGED' ? 'merged' : 'ready_to_merge',
+                info.mergeable === 'CONFLICTING' ? 'merge_conflict' :
+                    info.mergeStateStatus === 'BEHIND' ? 'is_behind' :
+                        runningChecks.length ? 'running_checks' :
+                            info.isDraft ? 'in_draft' :
+                                info.reviewDecision === 'REVIEW_REQUIRED' ? 'requires_approval' :
+                                    info.state === 'MERGED' ? 'merged' : 'ready_to_merge',
             failedChecks,
             runningChecks,
             branchName: info.headRefName,

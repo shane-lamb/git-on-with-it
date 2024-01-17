@@ -10,6 +10,8 @@ export interface JiraConfig {
     userId: string
     apiToken: string,
     host: string,
+    projectKey: string,
+    boardId: string,
     statuses: {
         readyForDevelopment: string
         inDevelopment: string
@@ -30,6 +32,8 @@ export const jiraConfigSchema = joi.object({
     userId: joi.string().required(),
     apiToken: joi.string().required(),
     host: joi.string().required(),
+    projectKey: joi.string().required(),
+    boardId: joi.string().required(),
     statuses: joi.object({
         readyForDevelopment: joi.string().allow(''), // allow empty strings for now, as this is currently unused
         inDevelopment: joi.string().required(),

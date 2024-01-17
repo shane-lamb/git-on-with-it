@@ -40,6 +40,32 @@ export class JiraService {
         }))
     }
 
+    async createIssue(type: 'Bug' | 'Story', title: string): Promise<string> {
+        const { userId,projectKey, boardId, statuses} = this.configService.jiraConfig()
+        const response = await this.getApi().addNewIssue({
+            fields: {
+                project: {
+                    key: projectKey,
+                },
+                summary: title,
+                assignee: {
+                    id: userId,
+                },
+                issuetype: {
+                    name: type
+                },
+            },
+        })
+        const issueId: string = response.id
+        const {transitions} = await this.getApi().listTransitions(issueId)
+        const transition = transitions.find(t => t.name === statuses.inDevelopment)
+        await this.getApi().transitionIssue(issueId, {transition})
+        const sprints = await this.getApi().getAllSprints(boardId)
+        const activeSprint = sprints.values.find(s => s.state === "active")
+        await this.getApi().addIssueToSprint(issueId, activeSprint.id)
+        return issueId
+    }
+
     async getAllStatuses(): Promise<JiraStatus[]> {
         const result = await this.getApi().listStatus()
         return result.map(status => ({

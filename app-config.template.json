@@ -4,6 +4,8 @@
     "userId": "user-ID-here",
     "apiToken": "api-token-here",
     "host": "freetrade.atlassian.net",
+    "projectKey": "project-key-here",
+    "boardId": "board-ID-here",
     "statuses": {
       "readyForDevelopment": "",
       "inDevelopment": "In Development",

@@ -16,6 +16,8 @@ describe('JIRA Service', () => {
             host: 'my-host',
             apiToken: 'my-api-token',
             userName: 'my-user-name',
+            projectKey: 'my-project-id',
+            boardId: 'my-board-id',
             statuses: {
                 inDevelopment: 'in-development-status',
                 inPrReview: 'in-pr-review-status',

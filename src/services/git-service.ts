@@ -64,8 +64,7 @@ export class GitService {
     async createAndCheckoutBranch(branchName: string): Promise<void> {
         try {
             await execa('git', ['checkout', '-b', branchName])
-        }
-        catch (error: any) {
+        } catch (error: any) {
             const execaError = error as ExecaError
             if (execaError.stderr) {
                 throw new AppError(execaError.stderr)
@@ -81,6 +80,20 @@ export class GitService {
     async getRemoteUrl(): Promise<string> {
         const result = await execa('git', ['ls-remote', '--get-url'])
         return result.stdout
+    }
+
+    async getRepoName(): Promise<string> {
+        const url = await this.getRemoteUrl()
+        const parts = url.split('/')
+        return parts[parts.length - 1].replace('.git', '')
+    }
+
+    async getGithubProjectName(): Promise<string> {
+        const url = await this.getRemoteUrl()
+        let parts = url.split(':')
+        const lastPart = parts[parts.length - 1]
+        parts = lastPart.split('/')
+        return parts[0].replace('.git', '')
     }
 
     async fetchBranch(branchName: string) {

@@ -1,12 +1,14 @@
 import { injectable } from 'tsyringe'
 import { GithubService } from '../services/github-service'
 import { OsService } from '../services/os-service'
+import { GitService } from '../services/git-service'
 
 @injectable()
 export class PostPrCommand {
     constructor(
         private githubService: GithubService,
         private osService: OsService,
+        private gitSerice: GitService,
     ) {
     }
 
@@ -15,7 +17,8 @@ export class PostPrCommand {
         if (prInfo) {
             const [, ...titleParts] = prInfo.title.split(' ')
             const title = titleParts.join(' ')
-            const text = `[PR for review](${prInfo.url}): ${title}`
+            const repoName = '`' + await this.gitSerice.getRepoName() + '`'
+            const text = `${repoName} [PR for review](${prInfo.url}): ${title}`
             await this.osService.copyToClipboard(text)
             console.log('Copied text to clipboard:\n' + text)
         } else {

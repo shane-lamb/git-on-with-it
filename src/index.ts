@@ -40,7 +40,7 @@ program
 program.command('update')
     .description('Install updates for git-on-with-it, if available')
 
-program.command('create-ticket <title>')
+program.command('create-ticket')
     .description('Create JIRA ticket on the sprint board')
     .action(commandRunner(CreateTicketCommand))
 

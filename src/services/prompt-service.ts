@@ -1,5 +1,5 @@
 import { injectable, singleton } from 'tsyringe'
-import { prompt } from 'inquirer'
+import { select, input } from '@inquirer/prompts'
 import { FileService } from './file-service'
 import { spawnCommand } from '../util/child-process-util'
 
@@ -9,14 +9,17 @@ export class PromptService {
     constructor(private fileService: FileService) {
     }
 
-    async selectOption(options: Option[], message: string): Promise<string | null> {
-        const answers = await prompt([{
-            type: 'rawlist',
+    async selectOption(options: Option[], message: string): Promise<string> {
+        return select({
             message,
-            name: 'issue',
             choices: options.map(option => ({name: option.description, value: option.id})),
-        }])
-        return answers['issue']
+        })
+    }
+
+    async enterText(message: string): Promise<string> {
+        return input({
+            message,
+        })
     }
 
     async editText(text: string): Promise<string> {

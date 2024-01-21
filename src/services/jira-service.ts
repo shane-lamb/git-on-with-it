@@ -57,13 +57,14 @@ export class JiraService {
             },
         })
         const issueId: string = response.id
+        const issueKey: string = response.key
         const {transitions} = await this.getApi().listTransitions(issueId)
         const transition = transitions.find(t => t.name === statuses.inDevelopment)
         await this.getApi().transitionIssue(issueId, {transition})
         const sprints = await this.getApi().getAllSprints(boardId)
         const activeSprint = sprints.values.find(s => s.state === "active")
         await this.getApi().addIssueToSprint(issueId, activeSprint.id)
-        return issueId
+        return issueKey
     }
 
     async getAllStatuses(): Promise<JiraStatus[]> {

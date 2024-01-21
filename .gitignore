@@ -4,6 +4,7 @@
 .idea/
 .venv/
 node_modules/
+node_install/
 
 # scratch test file for quick feedback loop when integrating with APIs
 src/scratch.spec.ts

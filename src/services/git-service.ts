@@ -1,19 +1,20 @@
 import { injectable, singleton } from 'tsyringe'
-import { Commit, Merge, Reference, Repository } from 'nodegit'
-import { Memoize } from 'typescript-memoize'
-import { maxBy } from 'lodash'
 import execa, { ExecaError } from 'execa'
 
 import { executeCommand } from '../util/child-process-util'
-import { asyncMap, removeNulls } from '../util/functional'
+import { removeNulls } from '../util/functional'
 import { FileService } from './file-service'
 import { ConfigService } from './config/config-service'
 import { LogService } from './log-service'
 import { AppError } from '../util/error'
+import { currentBranch, isDescendent, resolveRef } from 'isomorphic-git'
+import fs from 'fs'
 
 @singleton()
 @injectable()
 export class GitService {
+    dir: string | null = this.fileService.getGitRepoRootDirectory()
+
     constructor(
         private fileService: FileService,
         private config: ConfigService,
@@ -22,43 +23,34 @@ export class GitService {
     }
 
     async getCurrentBranch(): Promise<string> {
-        const repo = await this.getRepo()
-        const currentBranch = await repo.getCurrentBranch()
-        return currentBranch.shorthand()
+        if (!this.dir) throw new AppError('Not in a git repo!')
+        const branch = await currentBranch({fs, dir: this.dir})
+        return branch!
     }
 
     async getBaseBranch(branchName: string): Promise<string> {
-        const childBranch = await this.getBranch(branchName)
-        if (!childBranch) throw new AppError('Branch does not exist: ' + branchName)
+        if (!this.dir) throw new AppError('Not in a git repo!')
+        const child = await resolveRef({fs, dir: this.dir, ref: branchName})
 
         const possibleBaseBranches = this.config.gitConfig().possibleBaseBranches
-        this.log.write('Checking possible base branches to find nearest one', {possibleBaseBranches})
-        const branches = await asyncMap(possibleBaseBranches, name => this.getBranch(name))
-        const baseBranches = removeNulls(branches)
-        const withCount = await asyncMap(baseBranches, async branch => {
-            const baseCommit = await this.getBaseCommit(branch, childBranch)
-            return {
-                name: branch.shorthand(),
-                parentCount: baseCommit.parentcount(),
-            }
-        })
-
-        const selected = maxBy(withCount, b => b.parentCount)
-        if (!selected) throw new AppError('No base branch found!')
-
-        return selected.name
+        const maybeParents = await Promise.all(possibleBaseBranches.map(async name => {
+            const ref = await resolveRef({fs, dir: this.dir!, ref: name})
+            const isParent = await isDescendent({fs, dir: this.dir!, oid: child, ancestor: ref})
+            return isParent ? name : null
+        }))
+        const parents = removeNulls(maybeParents)
+        if (parents.length > 1) throw new AppError('Expected to find one base branch but found many: ' + parents.join(', '))
+        const parent = parents[0]
+        if (!parent) throw new AppError('No base branch found!')
+        return parent
     }
 
     async isChildBranchUpToDate(parentBranchName: string, childBranchName: string): Promise<boolean> {
-        const repo = await this.getRepo()
+        if (!this.dir) throw new AppError('Not in a git repo!')
+        const child = await resolveRef({fs, dir: this.dir, ref: childBranchName})
         await this.fetchBranch(parentBranchName)
-
-        const parentBranch = await this.getBranch(parentBranchName) as Reference
-        const childBranch = await this.getBranch(childBranchName) as Reference
-
-        const baseCommit = await this.getBaseCommit(parentBranch, childBranch)
-        const latestParentCommit = await repo.getBranchCommit(parentBranch)
-        return baseCommit.parentcount() === latestParentCommit.parentcount()
+        const parent = await resolveRef({fs, dir: this.dir, ref: parentBranchName})
+        return await isDescendent({fs, dir: this.dir, oid: child, ancestor: parent})
     }
 
     async createAndCheckoutBranch(branchName: string): Promise<void> {
@@ -103,33 +95,5 @@ export class GitService {
     isRepo(): boolean {
         const dir = this.fileService.getGitRepoRootDirectory()
         return dir !== null
-    }
-
-    @Memoize()
-    private async getRepo(): Promise<Repository> {
-        const dir = this.fileService.getGitRepoRootDirectory() as string
-        return Repository.open(dir)
-    }
-
-    private async getBranch(name: string): Promise<Reference | null> {
-        const repo = await this.getRepo()
-        try {
-            return await repo.getBranch(name)
-        } catch (ex) {
-            // [Error: no reference found for shorthand 'branch-name-here'] {
-            //     errno: -3,
-            //     errorFunction: 'Reference.dwim'
-            // }
-            if (ex.errno === -3) return null
-            throw ex
-        }
-    }
-
-    private async getBaseCommit(branch1: Reference, branch2: Reference): Promise<Commit> {
-        const repo = await this.getRepo()
-        const b1Commit = await repo.getBranchCommit(branch1)
-        const b2Commit = await repo.getBranchCommit(branch2)
-        const baseId = await Merge.base(repo, b1Commit.id(), b2Commit.id())
-        return repo.getCommit(baseId)
     }
 }

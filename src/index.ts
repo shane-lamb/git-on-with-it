@@ -65,4 +65,7 @@ program.command('pr-daemon')
     .description('WIP command for monitoring status of open PRs and notifying of changes')
     .action(commandRunner(PrDaemonCommand))
 
+program.command('update')
+    .description('Install updates for git-on-with-it, if available')
+
 program.parse()

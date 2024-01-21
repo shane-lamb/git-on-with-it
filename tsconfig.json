@@ -2,14 +2,13 @@
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es6",
+    "target": "ES2017",
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
   },
   "include": ["src/**/*"],
-  "lib": ["es2015"]
 }

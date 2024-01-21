@@ -37,35 +37,35 @@ program
     .description('CLI workflows for git')
     .version('1.0.0')
 
-program.command('open-pr')
-    .description('WIP command for opening a PR in GitHub')
-    .action(commandRunner(OpenPrCommand))
+program.command('update')
+    .description('Install updates for git-on-with-it, if available')
 
-program.command('post-pr')
-    .description('WIP command for copying text for a PR post')
-    .action(commandRunner(PostPrCommand))
+program.command('create-ticket <title>')
+    .description('Create JIRA ticket on the sprint board')
+    .action(commandRunner(CreateTicketCommand))
 
 program.command('create-branch')
-    .description('WIP command for creating a feature branch based on JIRA ticket')
+    .description('Switch to a new branch for an in-progress JIRA ticket')
     .action(commandRunner(CreateBranchCommand))
 
 program.command('circle')
-    .description('Open CircleCI page for current branch')
+    .description('View CircleCI status for current branch (in browser)')
     .action(commandRunner(CircleCommand))
 
-program.command('create-ticket <title>')
-    .description('Create a JIRA ticket on the sprint board')
-    .action(commandRunner(CreateTicketCommand))
+program.command('open-pr')
+    .description('Open a GitHub PR against one of your in-progress JIRA tickets')
+    .action(commandRunner(OpenPrCommand))
+
+program.command('post-pr')
+    .description('Copy some shareable text for someone to review your PR')
+    .action(commandRunner(PostPrCommand))
 
 program.command('watch-ci')
-    .description('WIP command for monitoring CI and PR activity related to current branch')
+    .description('Monitor CI and PR activity for current branch')
     .action(commandRunner(WatchCiCommand))
 
 program.command('pr-daemon')
-    .description('WIP command for monitoring status of open PRs and notifying of changes')
+    .description('Monitor status of open PRs and get notified of changes')
     .action(commandRunner(PrDaemonCommand))
-
-program.command('update')
-    .description('Install updates for git-on-with-it, if available')
 
 program.parse()

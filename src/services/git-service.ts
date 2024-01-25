@@ -34,9 +34,13 @@ export class GitService {
 
         const possibleBaseBranches = this.config.gitConfig().possibleBaseBranches
         const maybeParents = await Promise.all(possibleBaseBranches.map(async name => {
-            const ref = await resolveRef({fs, dir: this.dir!, ref: name})
-            const isParent = await isDescendent({fs, dir: this.dir!, oid: child, ancestor: ref})
-            return isParent ? name : null
+            try {
+                const ref = await resolveRef({fs, dir: this.dir!, ref: name})
+                const isParent = await isDescendent({fs, dir: this.dir!, oid: child, ancestor: ref})
+                return isParent ? name : null
+            } catch (err) {
+                return null
+            }
         }))
         const parents = removeNulls(maybeParents)
         if (parents.length > 1) throw new AppError('Expected to find one base branch but found many: ' + parents.join(', '))
